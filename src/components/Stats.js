@@ -59,9 +59,9 @@ export default function Stats({ stats }) {
 
   const [weather, setWeather] = useState({});
   const [bcStats, setStats ] = useState({});
-
+  
   useEffect(() => {
-    Axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Vancouver&units=metric&appid=b8e66281ff509b62be8673e1e95256a4`).then(res => {
+    Axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Vancouver&units=metric&appid=${process.env.REACT_APP_OPEN_WEATHER_APP_API_KEY}`).then(res => {
       const { data } = res;
       const { weather, main, name } = data;
       setWeather({
