@@ -1,4 +1,4 @@
-import  React, { useEffect, useState } from 'react';
+import  React from 'react';
 import { makeStyles, Grid, Typography, Box } from '@material-ui/core';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
@@ -63,7 +63,7 @@ export default function Summary({ summary }) {
                     <ArrowUpwardIcon style={{ color: "green", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/> :
                     <ArrowDownwardIcon style={{ color: "red", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/>
                   }
-                  <Typography variant="subtitle" color='textSecondary' style={{ color: `${wowTotalCheckIn >= 0 ? "green" : "red"}`}}>
+                  <Typography variant="subtitle1" color='textSecondary' style={{ color: `${wowTotalCheckIn >= 0 ? "green" : "red"}`}}>
                   {wowTotalCheckIn == null ? "" : `${Math.round(wowTotalCheckIn * 100)}% from previous week` }
                   </Typography>
                 </Box>
@@ -78,7 +78,7 @@ export default function Summary({ summary }) {
                     <ArrowUpwardIcon style={{ color: "green", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/> :
                     <ArrowDownwardIcon style={{ color: "red", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/>
                   }
-                  <Typography variant="subtitle" color='textSecondary' style={{ color: `${wowAvgCheckIn >= 0 ? "green" : "red"}`}}>
+                  <Typography variant="subtitle1" color='textSecondary' style={{ color: `${wowAvgCheckIn >= 0 ? "green" : "red"}`}}>
                     {wowAvgCheckIn == null ? "" : `${Math.round(wowAvgCheckIn * 100)}% from previous week` }
                   </Typography>
                 </Box>

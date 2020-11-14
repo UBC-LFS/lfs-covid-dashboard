@@ -55,9 +55,7 @@ export default function CheckInByBuilding({ checkInByBuilding }){
 						formatter: (value, ctx) => {
 							let sum = 0;
 							let dataArr = ctx.chart.data.datasets[0].data;
-							dataArr.map(data => {
-									sum += data;
-							});
+							dataArr.forEach(data => sum += data);
 							let percentage = sum ? (value*100 / sum).toFixed(2)+"%" : "Nothing to display";
 							return percentage;
 						},

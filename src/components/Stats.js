@@ -7,7 +7,7 @@ import CheckInTimeChart from './CheckInTimeChart';
 import CheckInByDateChart from './CheckInByDateChart';
 import CheckInByBuilding from './CheckInByBuilding';
 import Axios from 'axios';
-import { min, startCase } from 'lodash';
+import { startCase } from 'lodash';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -39,21 +39,9 @@ const useStyles = makeStyles((theme) => ({
   borders: {
     border: "1px solid #e0e0e0",
     margin: 5,
-    minWidth: 250
+    minWidth: 260
   }
 }));
-
-const options = {
-  scales: {
-       xAxes: [{
-           stacked: true
-       }],
-       yAxes: [{
-           stacked: true
-       }]
-   },
-   maintainAspectRatio: false
-}
 
 export default function Stats({ stats }) {
   const classes = useStyles();
@@ -104,31 +92,31 @@ export default function Stats({ stats }) {
         <div className={classes.toolbar} />
         <Grid container spacing={1}>
           <Grid container item xs={12} spacing={1}>
-              <Grid item xs={2.5} className={classes.borders}>
-                <Typography variant='h6' gutterBottom>TOTAL CHECK-IN TODAY</Typography>
+              <Grid item xs={2} className={classes.borders}>
+                <Typography variant='h6' gutterBottom>CHECK-IN TODAY</Typography>
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {numCheckInToday}
                 </Typography>
               </Grid>
-              <Grid item xs={2.5} className={classes.borders}>
+              <Grid item xs={2} className={classes.borders}>
                 <Typography variant='h6' gutterBottom>CHECK-IN PAST 7 DAYS</Typography>
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {numCheckInLast7Days}
                 </Typography>
               </Grid>
-              <Grid item xs={2.5} className={classes.borders}>
+              <Grid item xs={2} className={classes.borders}>
                 <Typography variant='h6' gutterBottom>CHECK-IN PAST 30 DAYS</Typography>
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {numCheckInLast31Days}
                 </Typography>
               </Grid>
-              <Grid item xs={2.5} className={classes.borders}>
-                <Typography variant='h6' gutterBottom>TOTAL CHECK-OUT TODAY</Typography>
+              <Grid item xs={2} className={classes.borders}>
+                <Typography variant='h6' gutterBottom>CHECK-OUT TODAY</Typography>
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {numCheckOutToday}
                 </Typography>
               </Grid>
-              <Grid item xs={2.5} className={classes.borders}>
+              <Grid item xs={2} className={classes.borders}>
                 {Object.keys(bcStats).length ? 
                   <>
                     <Typography variant="h6">
@@ -142,7 +130,7 @@ export default function Stats({ stats }) {
                     </Typography>
                   </>
                    : <Typography variant="h6" gutterBottom>
-                      Loading BC Stats...
+                      Loading BC Covid Stats...
                     </Typography>
                 }
               </Grid>

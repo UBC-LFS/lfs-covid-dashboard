@@ -117,7 +117,11 @@ export default function MenuDrawer() {
               </Typography>
             </Grid>
             <Grid item>
-              <img src={`${process.env.PUBLIC_URL + '/ubc-logo.png'}`} style={{width:"30px", height:"40px"}}/>
+              <img 
+                src={`${process.env.PUBLIC_URL + '/ubc-logo.png'}`}
+                alt="UBC Logo"
+                style={{width:"30px", height:"40px"}}
+              />
             </Grid>
           </Grid>
         </Toolbar>
