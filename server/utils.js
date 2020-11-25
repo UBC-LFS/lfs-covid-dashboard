@@ -105,8 +105,8 @@ const fetchJSONResponseReport = async (surveyName) => {
   return JSON.parse(fs.readFileSync(surveyName + '.json'))
 }
 
-const getCheckInAreaOfActivity = (buildings, fnhLevels, mcmlLevels, otherAreas) => {
-  const areas = buildings.filter(building => building != 'FNH' && building != 'MCML' && building != 'Other');
+const getAreaOfActivity = (buildings, fnhLevels, mcmlLevels, otherAreas) => {
+  const areas = buildings.filter(building => building != 'FNH' && building != 'MCML' && building != 'Other' && building != 'Others');
   if (fnhLevels && fnhLevels.length) {
     fnhLevels.forEach(level => {
       areas.push('FNH ' + level);
@@ -121,72 +121,6 @@ const getCheckInAreaOfActivity = (buildings, fnhLevels, mcmlLevels, otherAreas) 
 
   if (otherAreas) {
     areas.push(otherAreas);
-  }
-
-  return areas;
-}
-
-const getCheckOutAreaOfActivity = (rawAreas) => {
-  const {
-    buildings, 
-    fnhAreas, 
-    mcmlAreas, 
-    commonAreas,
-    otherFnhAreas, 
-    otherMcmlAreas, 
-    otherBuildings, 
-    otherCommonAreas
-  } = rawAreas;
-
-  const areas = buildings.filter(building => building != 'Others');
-  
-  if (otherBuildings) {
-    areas.push(`Other Building(s):(${otherBuildings})`);
-  }
-
-  if(commonAreas && commonAreas.length){
-    areas.push(...commonAreas.filter(area => area != 'Others'));
-  }
-
-  if (otherCommonAreas) {
-    areas.push(`Other Common Area(s):(${otherCommonAreas})`);
-  }
-
-  if (fnhAreas && fnhAreas.length){
-    let idx = areas.indexOf("FNH");
-    areas.splice(idx, 1);
-    if(fnhAreas.includes("Elevator")) {
-      idx = fnhAreas.indexOf("Elevator")
-      fnhAreas[idx] = "FNH Elevator";
-    }
-    if (fnhAreas.includes("Others")) {
-      idx = fnhAreas.indexOf("Others")
-      if (otherFnhAreas) {
-        fnhAreas.splice(idx, 1, `FNH:(${otherFnhAreas})`);
-      } else {
-        fnhAreas.splice(idx, 1);
-      }
-    }
-    areas.push(...fnhAreas);
-  }
-
-  if (mcmlAreas && mcmlAreas.length) {
-    let idx = areas.indexOf("MCML");
-    areas.splice(idx, 1);
-    if (mcmlAreas.includes("Elevator")) {
-      let idx = mcmlAreas.indexOf("Elevator")
-      mcmlAreas[idx] = "MCML Elevator";
-    }
-
-    if (mcmlAreas.includes("Others")) {
-      let idx = mcmlAreas.indexOf("Others")
-      if (otherMcmlAreas) {
-        mcmlAreas.splice(idx, 1, `MCML:(${otherMcmlAreas})`);
-      } else {
-        mcmlAreas.splice(idx, 1);
-      }
-    }
-    areas.push(...mcmlAreas);
   }
 
   return areas;
@@ -236,4 +170,4 @@ const buildCheckInByBuilding = (records) => {
   });
 }
 
-module.exports = { downloadResponseReportZIP, unzipResponseReport, fetchJSONResponseReport, getCheckInAreaOfActivity, getCheckOutAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding }
+module.exports = { downloadResponseReportZIP, unzipResponseReport, fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding }

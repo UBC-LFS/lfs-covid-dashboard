@@ -120,7 +120,7 @@ export default function Stats({ stats }) {
                 {Object.keys(bcStats).length ? 
                   <>
                     <Typography variant="h6">
-                      BC COVID STATS
+                      BC COVID-19 STATS
                     </Typography>
                     <Typography variant='subtitle1' color='textSecondary'>
                       New Cases: {bcStats.change_cases} 
@@ -130,7 +130,7 @@ export default function Stats({ stats }) {
                     </Typography>
                   </>
                    : <Typography variant="h6" gutterBottom>
-                      Loading BC Covid Stats...
+                      Loading BC Covid-19 Stats...
                     </Typography>
                 }
               </Grid>

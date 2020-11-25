@@ -76,7 +76,7 @@ export default function Home({ checkInRecords, checkOutRecords }) {
               format="DD/MM/yyyy"
               views={["year", "month", "date"]}
               onChange={handleDateChange} 
-              minDate={moment('2020-10-17').toDate()}  
+              minDate={surveyType === 'in' ? moment('2020-10-17').toDate() : moment('2020-11-22').toDate()}  
             />
           </Box>
         </Box>

@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
 
-const { fetchJSONResponseReport, getCheckInAreaOfActivity, getCheckOutAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
+const { fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
 const moment = require('moment')
 
 const PORT = process.env.PORT || 4000
@@ -72,7 +72,7 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
         
         let areas = [];
         if(buildings){
-          areas = getCheckInAreaOfActivity(buildings, fnhLevels, mcmlLevels, otherAreas);
+          areas = getAreaOfActivity(buildings, fnhLevels, mcmlLevels, otherAreas);
         }
 
         if(!checkInRecords[recordedDate.year()]){
@@ -204,33 +204,18 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
       const { recordedDate: rawRecordedDate } = response.values;
       const recordedDate = moment(rawRecordedDate);
 
-      if(recordedDate.isAfter('2020-10-16', 'day')){
-        // console.log(response);
+      if(recordedDate.isAfter('2020-11-23', 'day')){
         const { QID14: buildings, QID16: fnhAreas, QID13: mcmlAreas, QID17: commonAreas} = response.labels;
         const { 
           QID3_4: firstName, 
           QID3_5: lastName, 
-          QID16_27_TEXT: otherFnhAreas, 
-          QID13_32_TEXT: otherMcmlAreas, 
           QID14_6_TEXT: otherBuildings, 
-          QID17_4_TEXT: otherCommonAreas,
           QID15_TEXT: comments,
         } = response.values;
-      //   const { QID10: buildings, QID13: fnhLevels, QID14: mcmlLevels } = response.labels;
-      //   const { QID3_4: firstName, QID3_5: lastName, QID10_TEXT: otherAreas, QID15_TEXT: comments } = response.values;
         
         let areas = [];
-        if(buildings && buildings.length){
-          areas = getCheckOutAreaOfActivity({
-            buildings, 
-            fnhAreas, 
-            mcmlAreas, 
-            commonAreas,
-            otherFnhAreas, 
-            otherMcmlAreas, 
-            otherBuildings, 
-            otherCommonAreas
-          });
+        if(buildings){
+          areas = getAreaOfActivity(buildings, fnhAreas, mcmlAreas, otherBuildings);
         }
 
         if(!checkOutRecords[recordedDate.year()]){
