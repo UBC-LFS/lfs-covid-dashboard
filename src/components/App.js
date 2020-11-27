@@ -15,6 +15,7 @@ import {
 import Home from './Home'
 import Stats from './Stats';
 import Summary from './Summary';
+import Login from './Login';
 
 Chart.defaults.global.plugins.datalabels.display = false
 
@@ -67,6 +68,9 @@ export default function App() {
         </Backdrop>
         <Router>
           <Switch>
+            <Route path="/login">
+              <Login/>
+            </Route>
             <Route path="/stats">
               <Stats stats={stats}/>
             </Route >

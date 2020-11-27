@@ -3,6 +3,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
+var ldap = require('ldapjs');
 
 const { fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
 const moment = require('moment')
@@ -303,6 +304,43 @@ app.get('/api/covid', (req, res) => {
       return res.status(500).send()
     })
 })
+
+app.post('/api/login', (req, result) => {
+  const client = ldap.createClient({
+    url: process.env.UBC_LDAP_SERVER
+  });
+  //Todo: Finish LDAP search, implement bearer token validation
+  // client.bind(`uid=${req.body.cwlId},ou=People,o=eldaproot`, req.body.password, function(err){
+  client.bind(`cn=${req.body.cwlId},ou=Service Accounts,dc=landfood,dc=ubc,dc=ca`, req.body.password, function(err){
+    if(err){
+      client.unbind();
+      return result.status(401).send();
+    }
+    client.search('cn=covid-dashboard,ou=Roles,ou=Groups,dc=landfood,dc=ubc,dc=ca', {
+      scope: 'base',
+    }, function(error, res) {
+      if(error){
+        client.unbind();
+        return result.status(401).send();
+      }
+      res.on('searchEntry', function(entry) {
+        console.log('entry: ' + JSON.stringify(entry.object));
+        return result.status(200).send();
+      });
+      res.on('searchReference', function(referral) {
+        console.log('referral: ' + referral.uris.join());
+      });
+      res.on('error', function(err) {
+        console.error('error: ' + err.message);
+        return result.status(401).send();
+      });
+      res.on('end', function(onEndResult) {
+        console.log('status: ' + onEndResult.status);
+        return result.status(200).send();
+      });
+    });
+  });
+});
 
 // serve static front-end content
 app.use(express.static('build'))

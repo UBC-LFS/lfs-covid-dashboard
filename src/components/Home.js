@@ -3,6 +3,8 @@ import { makeStyles, Typography, Select, MenuItem, Box } from '@material-ui/core
 import { DatePicker } from '@material-ui/pickers';
 import isEmpty from 'lodash/isEmpty'
 import moment from 'moment';
+import { ToastContainer } from 'react-toastify';
+
 
 import MenuDrawer from './MenuDrawer';
 import SurveyDataTable from './SurveyDataTable';
@@ -81,6 +83,7 @@ export default function Home({ checkInRecords, checkOutRecords }) {
           </Box>
         </Box>
         { isEmpty(checkInRecords) ? null : <SurveyDataTable records={records} surveyType={surveyType} />}
+        <ToastContainer />
       </main>
     </div>
   )
