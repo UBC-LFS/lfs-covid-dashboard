@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import clsx from 'clsx';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import { Grid, Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
@@ -10,6 +10,8 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import HomeIcon from '@material-ui/icons/Home';
 import ShowChartIcon from '@material-ui/icons/ShowChart';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import Logout from './Logout';
 
 const drawerWidth = 240;
 
@@ -74,7 +76,8 @@ const useStyles = makeStyles((theme) => ({
 export default function MenuDrawer() {
   const classes = useStyles();
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [openLogout, setOpenLogout ] = useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -165,7 +168,17 @@ export default function MenuDrawer() {
             <ListItemText primary='Summary' />
           </ListItem>
         </List>
+        <Divider />
+        <List>
+          <ListItem button onClick={() => setOpenLogout(true)}>
+            <ListItemIcon>
+              <ExitToAppIcon />
+            </ListItemIcon>
+            <ListItemText primary='Logout' />
+          </ListItem>
+        </List>
       </Drawer>
+      <Logout openLogout={openLogout} setOpenLogout={setOpenLogout}/>
     </div>
   );
 }

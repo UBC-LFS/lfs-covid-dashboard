@@ -66,7 +66,9 @@ export default function SurveyDataTable({ records, surveyType }) {
           data={records} 
           options={{
             exportButton: true,
-            pageSize: 10
+            pageSize: 10,
+            pageSizeOptions: [10,20,50,80],
+            exportAllData: true,
           }}
           icons={tableIcons}
         />

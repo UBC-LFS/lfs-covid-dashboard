@@ -1,9 +1,12 @@
 const fs = require('fs')
 const express = require('express')
+const cookieParser = require('cookie-parser')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const path = require('path')
-var ldap = require('ldapjs');
+const ldap = require('ldapjs');
+const jwt = require('jsonwebtoken');
+const expressJwt = require('express-jwt');
 
 const { fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
 const moment = require('moment')
@@ -14,13 +17,7 @@ const checkInSurveyName = process.env.CHECKIN_SURVEY_NAME
 const checkOutSurveyName = process.env.CHECKOUT_SURVEY_NAME
 const downloadEveryMinutes = 10
 
-const buildings = {
-  4: 'FNH',
-  5: 'MCML',
-  6: 'Greenhouse',
-  7: 'UBC Farm',
-  8: 'Others',
-}
+const privateKEY  = fs.readFileSync('./private.key', 'utf8');
 
 // configure .env file
 require('dotenv').config()
@@ -286,18 +283,30 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(require('morgan')('dev'))
 }
 
+// set up cookie parser
+app.use(cookieParser())
+
 // set up cors
-app.use(cors())
+app.use(cors({
+  origin: true,
+  credentials: true 
+}))
 
 // parse request body
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 // loans endpoint
-app.get('/api/covid', (req, res) => {
+app.get('/api/covid', 
+  expressJwt({ 
+    secret: privateKEY, 
+    issuer: 'UBC LFS',
+    algorithms: ['RS256']
+  }),(req, res) => {
+
   generateOutputJSON()
     .then(stats => {
-      res.json(stats)
+      return res.json(stats)
     })
     .catch(err => {
       console.log(err)
@@ -305,7 +314,7 @@ app.get('/api/covid', (req, res) => {
     })
 })
 
-app.post('/api/login', (req, result) => {
+app.post('/api/login', (req, response) => {
   const client = ldap.createClient({
     url: process.env.UBC_LDAP_SERVER
   });
@@ -314,29 +323,54 @@ app.post('/api/login', (req, result) => {
   client.bind(`cn=${req.body.cwlId},ou=Service Accounts,dc=landfood,dc=ubc,dc=ca`, req.body.password, function(err){
     if(err){
       client.unbind();
-      return result.status(401).send();
+      return response.status(401).send('Not Authenticated');
     }
     client.search('cn=covid-dashboard,ou=Roles,ou=Groups,dc=landfood,dc=ubc,dc=ca', {
       scope: 'base',
     }, function(error, res) {
       if(error){
         client.unbind();
-        return result.status(401).send();
+        return response.status(401).send('Not Authenticated');
       }
       res.on('searchEntry', function(entry) {
-        console.log('entry: ' + JSON.stringify(entry.object));
-        return result.status(200).send();
+        const { member } = entry.object;
+        // TODO: replace cliu55 with req.body.cwlID
+        // return member.some(m => m.includes(`uid=${req.body.cwlId}`)) ? 
+        if(member.some(m => m.includes(`uid=cliu55`))){
+          const expiration = moment().add(1, 'h');
+          const exp = expiration.unix();
+
+          const signingOptions = {
+            issuer: 'UBC LFS',
+            expiresIn: '1h',
+            algorithm: 'RS256'
+          };
+
+          const token = jwt.sign(
+            {
+              uid: req.body.cwlId
+            }, 
+            privateKEY,
+            signingOptions
+          );
+          return response
+            .cookie('access_token', 'Bearer ' + token, {
+              expires: expiration.toDate(),
+            })
+            .status(200)
+            .send('Authenticated');
+        }else{
+            return response.status(401).send('Not Authenticated');
+        }
       });
       res.on('searchReference', function(referral) {
         console.log('referral: ' + referral.uris.join());
       });
       res.on('error', function(err) {
         console.error('error: ' + err.message);
-        return result.status(401).send();
       });
       res.on('end', function(onEndResult) {
         console.log('status: ' + onEndResult.status);
-        return result.status(200).send();
       });
     });
   });

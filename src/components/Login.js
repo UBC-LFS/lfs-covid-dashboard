@@ -8,11 +8,12 @@ import Link from '@material-ui/core/Link';
 import Paper from '@material-ui/core/Paper';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
+import SchoolIcon from '@material-ui/icons/School';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import { useHistory } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
+import { useAppState } from '../appState';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Copyright() {
@@ -33,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     height: '100vh',
   },
   image: {
-    backgroundImage: 'url(https://source.unsplash.com/random)',
+    backgroundImage: `url(${process.env.PUBLIC_URL + '/ubc.jpeg'})`,
     backgroundRepeat: 'no-repeat',
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
@@ -66,6 +67,7 @@ export default function Login() {
 
   const [cwlId, setCwlId] = useState("");
   const [password, setPassword] = useState("");
+  const { setAuthenticated } = useAppState();
 
   const validateForm = () => {
     return cwlId.length > 0 && password.length > 0;
@@ -76,9 +78,12 @@ export default function Login() {
     Axios.post('http://localhost:4000/api/login', {
       cwlId,
       password
+    }, {
+      withCredentials: true
     }).then((res) => {
       if(res.status === 200){
-        history.push("/home");
+        setAuthenticated(true);
+        history.push("/");
         toast.success('Login successful!', {
           position: "bottom-center",
           autoClose: 5000,
@@ -100,6 +105,7 @@ export default function Login() {
   const loginFailed = () => {
     setCwlId("");
     setPassword("");
+    setAuthenticated(false);
     toast.error('Login failed. Please try again with valid credentials', {
       position: "bottom-center",
       autoClose: false,
@@ -118,7 +124,7 @@ export default function Login() {
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
-            <LockOutlinedIcon />
+            <SchoolIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             UBC LFS Covid-19 Dashboard

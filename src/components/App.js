@@ -11,11 +11,14 @@ import {
   Switch,
   Route,
 } from "react-router-dom";
+import Cookies from 'js-cookie'
 
 import Home from './Home'
 import Stats from './Stats';
 import Summary from './Summary';
 import Login from './Login';
+import { useAppState } from '../appState';
+import PrivateRoute from './PrivateRoute';
 
 Chart.defaults.global.plugins.datalabels.display = false
 
@@ -44,45 +47,52 @@ export default function App() {
   const [checkOutRecords, setCheckOutRecords] = useState({});
   const [stats, setStats] = useState({});
   const [summary, setSummary] = useState({});
-  const [backdrop, setBackdrop] = useState(true);
+  const [isLoading, setIsLoading] = useState(true)
   const classes = useStyles();
+  const { setAuthenticated } = useAppState();  
+  const token = Cookies.get('access_token');
 
   useEffect(() => {
-    Axios.get('http://localhost:4000/api/covid').then((res) => {
-      const { data: { checkInRecords, checkOutRecords, stats, summary} } = res;
-      setCheckInRecords(checkInRecords);
-      setCheckOutRecords(checkOutRecords);
-      setStats(stats);
-      setSummary(summary);
-      setBackdrop(false);
-    }).catch((err) => {
-      console.log(err)
-    })
-  }, [])
+    if(token){
+      Axios.get('http://localhost:4000/api/covid', {
+        withCredentials: true,
+        headers: { Authorization: token }
+      }).then((res) => {
+        setAuthenticated(true);
+        const { data: { checkInRecords, checkOutRecords, stats, summary} } = res;
+        setCheckInRecords(checkInRecords);
+        setCheckOutRecords(checkOutRecords);
+        setStats(stats);
+        setSummary(summary);
+        setIsLoading(false);
+      }).catch((err) => {
+        console.log(err)
+      })
+    }else{
+      setAuthenticated(false);
+      setIsLoading(false);
+    }
+  }, [token, setAuthenticated])
+  
 
-  return (
-    <ThemeProvider theme={theme}>
-      <MuiPickersUtilsProvider utils={MomentUtils}>
-        <Backdrop className={classes.backdrop} open={backdrop}>
-          <CircularProgress color="inherit" />
-        </Backdrop>
-        <Router>
-          <Switch>
-            <Route path="/login">
-              <Login/>
-            </Route>
-            <Route path="/stats">
-              <Stats stats={stats}/>
-            </Route >
-            <Route path="/summary">
-              <Summary summary={summary}/>
-            </Route >
-            <Route path="/">
-              <Home checkInRecords={checkInRecords} checkOutRecords={checkOutRecords}/>
-            </Route>
-          </Switch>
-        </Router>
-      </MuiPickersUtilsProvider>
-    </ThemeProvider>
+  return isLoading ? (
+      <Backdrop className={classes.backdrop} open={isLoading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+  )  : (
+      <ThemeProvider theme={theme}>
+        <MuiPickersUtilsProvider utils={MomentUtils}>
+          <Router>
+            <Switch>
+              <Route path="/login">
+                <Login/>
+              </Route>
+              <PrivateRoute path="/stats" component={Stats} data={{stats}} />
+              <PrivateRoute path="/summary" component={Summary} data={{summary}} />
+              <PrivateRoute path="/" component={Home} data={{checkInRecords, checkOutRecords}} />
+            </Switch>
+          </Router>
+        </MuiPickersUtilsProvider>
+      </ThemeProvider>
   );
 }

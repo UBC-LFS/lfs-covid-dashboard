@@ -37,7 +37,7 @@ export default function Summary({ summary }) {
   let wowAvgCheckIn = null;
 
   if(Object.keys(summary).length){
-    averageThisWeek = totalCheckInThisWeek / Object.keys(checkInThisWeek).length;
+    averageThisWeek = Math.round(totalCheckInThisWeek / Object.keys(checkInThisWeek).length);
     let averageLastWeek = totalCheckInLastWeek / Object.keys(checkInLastWeek).length
  
     wowTotalCheckIn = (totalCheckInThisWeek - totalCheckInLastWeek) / totalCheckInLastWeek;
@@ -58,7 +58,7 @@ export default function Summary({ summary }) {
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {totalCheckInThisWeek}
                 </Typography>
-                <Box display="flex" alignContent="center">
+                <Box display="flex" alignItems="center">
                   {wowTotalCheckIn == null ? null :wowTotalCheckIn >= 0 ? 
                     <ArrowUpwardIcon style={{ color: "green", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/> :
                     <ArrowDownwardIcon style={{ color: "red", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/>
@@ -73,7 +73,7 @@ export default function Summary({ summary }) {
                 <Typography variant="h6" color='textSecondary' gutterBottom>
                   {averageThisWeek}
                 </Typography>
-                <Box display="flex" alignContent="center">
+                <Box display="flex" alignItems="center">
                   {wowAvgCheckIn == null ? null : wowAvgCheckIn >= 0 ? 
                     <ArrowUpwardIcon style={{ color: "green", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/> :
                     <ArrowDownwardIcon style={{ color: "red", marginRight: "5px", paddingBottom: "2px" }} fontSize="small"/>
