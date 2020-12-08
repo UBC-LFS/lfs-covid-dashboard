@@ -318,59 +318,61 @@ app.post('/api/login', (req, response) => {
   const client = ldap.createClient({
     url: process.env.UBC_LDAP_SERVER
   });
-  //Todo: Finish LDAP search, implement bearer token validation
-  // client.bind(`uid=${req.body.cwlId},ou=People,o=eldaproot`, req.body.password, function(err){
-  client.bind(`cn=${req.body.cwlId},ou=Service Accounts,dc=landfood,dc=ubc,dc=ca`, req.body.password, function(err){
+  client.bind(`uid=${req.body.cwlId},ou=People,dc=landfood,dc=ubc,dc=ca`, req.body.password, function(err){
     if(err){
       client.unbind();
       return response.status(401).send('Not Authenticated');
     }
-    client.search('cn=covid-dashboard,ou=Roles,ou=Groups,dc=landfood,dc=ubc,dc=ca', {
-      scope: 'base',
-    }, function(error, res) {
-      if(error){
+    client.bind(`cn=covid-dashboard-svc-host,ou=Service Accounts,dc=landfood,dc=ubc,dc=ca`, process.env.UBC_LDAP_SERVICE_ACCOUNT_PWD, function(serviceAccBindErr){
+      if(serviceAccBindErr){
         client.unbind();
         return response.status(401).send('Not Authenticated');
       }
-      res.on('searchEntry', function(entry) {
-        const { member } = entry.object;
-        // TODO: replace cliu55 with req.body.cwlID
-        // return member.some(m => m.includes(`uid=${req.body.cwlId}`)) ? 
-        if(member.some(m => m.includes(`uid=cliu55`))){
-          const expiration = moment().add(1, 'h');
-          const exp = expiration.unix();
-
-          const signingOptions = {
-            issuer: 'UBC LFS',
-            expiresIn: '1h',
-            algorithm: 'RS256'
-          };
-
-          const token = jwt.sign(
-            {
-              uid: req.body.cwlId
-            }, 
-            privateKEY,
-            signingOptions
-          );
-          return response
-            .cookie('access_token', 'Bearer ' + token, {
-              expires: expiration.toDate(),
-            })
-            .status(200)
-            .send('Authenticated');
-        }else{
-            return response.status(401).send('Not Authenticated');
+      client.search('cn=covid-dashboard,ou=Roles,ou=Groups,dc=landfood,dc=ubc,dc=ca', {
+        scope: 'base',
+      }, function(error, res) {
+        if(error){
+          client.unbind();
+          return response.status(401).send('Not Authenticated');
         }
-      });
-      res.on('searchReference', function(referral) {
-        console.log('referral: ' + referral.uris.join());
-      });
-      res.on('error', function(err) {
-        console.error('error: ' + err.message);
-      });
-      res.on('end', function(onEndResult) {
-        console.log('status: ' + onEndResult.status);
+        res.on('searchEntry', function(entry) {
+          const { member } = entry.object;
+          if(member.some(m => m.includes(`uid=${req.body.cwlId}`))){
+            const expiration = moment().add(1, 'h');
+            const exp = expiration.unix();
+  
+            const signingOptions = {
+              issuer: 'UBC LFS',
+              expiresIn: '1h',
+              algorithm: 'RS256'
+            };
+  
+            const token = jwt.sign(
+              {
+                uid: req.body.cwlId
+              }, 
+              privateKEY,
+              signingOptions
+            );
+            return response
+              .cookie('access_token', 'Bearer ' + token, {
+                expires: expiration.toDate(),
+              })
+              .status(200)
+              .send('Authenticated');
+          }else{
+              return response.status(401).send('Not Authenticated');
+          }
+        });
+        res.on('searchReference', function(referral) {
+          console.log('referral: ' + referral.uris.join());
+        });
+        res.on('error', function(err) {
+          console.error('error: ' + err.message);
+        });
+        res.on('end', function(onEndResult) {
+          console.log('status: ' + onEndResult.status);
+        });
       });
     });
   });

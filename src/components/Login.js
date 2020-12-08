@@ -140,6 +140,7 @@ export default function Login() {
               name="email"
               autoComplete="email"
               autoFocus
+              value={cwlId}
               onChange={(e) => setCwlId(e.target.value)}
             />
             <TextField
@@ -152,6 +153,7 @@ export default function Login() {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <Button
