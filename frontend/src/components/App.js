@@ -54,7 +54,7 @@ export default function App() {
 
   useEffect(() => {
     if(token){
-      Axios.get('http://localhost:4000/api/covid', {
+      Axios.get('http://localhost:8080/api/covid', {
         withCredentials: true,
         headers: { Authorization: token }
       }).then((res) => {

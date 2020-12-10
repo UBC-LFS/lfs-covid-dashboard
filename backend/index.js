@@ -11,7 +11,7 @@ const expressJwt = require('express-jwt');
 const { fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
 const moment = require('moment')
 
-const PORT = process.env.PORT || 4000
+const PORT = process.env.PORT || 8080
 
 const checkInSurveyName = process.env.CHECKIN_SURVEY_NAME
 const checkOutSurveyName = process.env.CHECKOUT_SURVEY_NAME
