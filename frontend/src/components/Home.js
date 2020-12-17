@@ -2,7 +2,7 @@ import  React, { useState, useEffect } from 'react';
 import { makeStyles, Typography, Select, MenuItem, Box } from '@material-ui/core';
 import { DatePicker } from '@material-ui/pickers';
 import isEmpty from 'lodash/isEmpty'
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { ToastContainer } from 'react-toastify';
 
 

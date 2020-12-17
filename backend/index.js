@@ -9,7 +9,8 @@ const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 
 const { fetchJSONResponseReport, getAreaOfActivity, sortRecordsByTime, buildCheckInByBuilding } = require('./utils')
-const moment = require('moment')
+const moment = require('moment-timezone')
+moment.tz.setDefault("America/Los_Angeles");
 
 const PORT = process.env.PORT || 8080
 

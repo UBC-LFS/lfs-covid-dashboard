@@ -1,6 +1,6 @@
 import React from 'react';
 import {Bar} from 'react-chartjs-2';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 
 export default function CheckInByDateChart({ checkInByDate }) {

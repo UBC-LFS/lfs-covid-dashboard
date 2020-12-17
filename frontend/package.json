@@ -19,6 +19,7 @@
     "lodash": "^4.17.20",
     "material-table": "^1.67.0",
     "moment": "^2.29.1",
+    "moment-timezone": "^0.5.32",
     "react": "^16.13.1",
     "react-chartjs-2": "^2.10.0",
     "react-dom": "^16.13.1",

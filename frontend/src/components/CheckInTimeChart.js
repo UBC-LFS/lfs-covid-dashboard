@@ -1,7 +1,7 @@
 import  React from 'react';
 import {Scatter} from 'react-chartjs-2';
 import 'chartjs-plugin-zoom';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 
 export default function CheckInTimeChart({ checkInByTime }) {

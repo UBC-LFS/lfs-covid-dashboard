@@ -2,7 +2,7 @@ const { createResponseExport, getResponseExportProgress, getResponseExportFile }
 
 const fs = require('fs')
 const JSZip = require('jszip')
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 /**
  * Donwloads a compressed file containing a new response export

@@ -2,7 +2,7 @@ import  React from 'react';
 import { makeStyles, Grid, Typography, Box } from '@material-ui/core';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import MenuDrawer from './MenuDrawer';
 import SummaryTable from './SummaryTable';
 

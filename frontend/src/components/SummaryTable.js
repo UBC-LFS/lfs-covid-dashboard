@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import MaterialTable from 'material-table';
 import AddBox from '@material-ui/icons/AddBox';
 import ArrowDownward from '@material-ui/icons/ArrowDownward';

@@ -4,6 +4,8 @@ import './index.css';
 import App from './components/App';
 import * as serviceWorker from './serviceWorker';
 import AppStateProvider from './appState';
+import moment from 'moment-timezone';
+moment.tz.setDefault("America/Los_Angeles");
 
 ReactDOM.render(
   <React.StrictMode>
