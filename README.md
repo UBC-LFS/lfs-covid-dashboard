@@ -3,7 +3,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ## Setup Instructions
 
 1. Create `.env` files in the `frontend` and `backend` folder and fill in information specified by corresponding `.env.example` files
-2. Create a file called `private.key` with RSA Private key that will serve as JWT token secret
+2. Create a file called `private.key` with RSA Private key in the `backend` folder. It will serve as the JWT token secret
 
 ### Run Locally
 
