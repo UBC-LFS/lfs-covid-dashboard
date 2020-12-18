@@ -1,10 +1,10 @@
-import React from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Cookies from 'js-cookie'
-import { useAppState } from '../appState';
+import React from "react";
+import Button from "@material-ui/core/Button";
+import Dialog from "@material-ui/core/Dialog";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Cookies from "js-cookie";
+import { useAppState } from "../appState";
 
 export default function Logout({ openLogout, setOpenLogout }) {
   const { setAuthenticated } = useAppState();
@@ -16,14 +16,11 @@ export default function Logout({ openLogout, setOpenLogout }) {
   const logout = () => {
     handleClose();
     setAuthenticated(false);
-    Cookies.remove('access_token');
+    Cookies.remove("access_token");
   };
 
   return (
-    <Dialog
-      open={openLogout}
-      onClose={handleClose}
-    >
+    <Dialog open={openLogout} onClose={handleClose}>
       <DialogTitle>{"Are you sure you want to logout?"}</DialogTitle>
       <DialogActions>
         <Button onClick={logout} color="primary" autoFocus>

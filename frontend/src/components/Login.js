@@ -1,58 +1,60 @@
-import Axios from 'axios';
-import React,  { useState } from 'react';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
-import Paper from '@material-ui/core/Paper';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import SchoolIcon from '@material-ui/icons/School';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import Axios from "axios";
+import React, { useState } from "react";
+import Avatar from "@material-ui/core/Avatar";
+import Button from "@material-ui/core/Button";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import TextField from "@material-ui/core/TextField";
+import Link from "@material-ui/core/Link";
+import Paper from "@material-ui/core/Paper";
+import Box from "@material-ui/core/Box";
+import Grid from "@material-ui/core/Grid";
+import SchoolIcon from "@material-ui/icons/School";
+import Typography from "@material-ui/core/Typography";
+import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
-import { useAppState } from '../appState';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import { useAppState } from "../appState";
+import "react-toastify/dist/ReactToastify.css";
 
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
+      {"Copyright © "}
       <Link color="inherit" href="https://material-ui.com/">
         UBC Faculty of Land and Food Systems
-      </Link>{' '}
+      </Link>{" "}
       {new Date().getFullYear()}
-      {'.'}
+      {"."}
     </Typography>
   );
 }
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    height: '100vh',
+    height: "100vh",
   },
   image: {
-    backgroundImage: `url(${process.env.PUBLIC_URL + '/ubc.jpeg'})`,
-    backgroundRepeat: 'no-repeat',
+    backgroundImage: `url(${process.env.PUBLIC_URL + "/ubc.jpeg"})`,
+    backgroundRepeat: "no-repeat",
     backgroundColor:
-      theme.palette.type === 'light' ? theme.palette.grey[50] : theme.palette.grey[900],
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+      theme.palette.type === "light"
+        ? theme.palette.grey[50]
+        : theme.palette.grey[900],
+    backgroundSize: "cover",
+    backgroundPosition: "center",
   },
   paper: {
     margin: theme.spacing(8, 4),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
   },
   avatar: {
     margin: theme.spacing(1),
     backgroundColor: theme.palette.secondary.main,
   },
   form: {
-    width: '100%', // Fix IE 11 issue.
+    width: "100%", // Fix IE 11 issue.
     marginTop: theme.spacing(1),
   },
   submit: {
@@ -71,42 +73,48 @@ export default function Login() {
 
   const validateForm = () => {
     return cwlId.length > 0 && password.length > 0;
-  }
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    Axios.post('http://localhost:8080/api/login', {
-      cwlId,
-      password
-    }, {
-      withCredentials: true
-    }).then((res) => {
-      if(res.status === 200){
-        setAuthenticated(true);
-        history.push("/");
-        toast.success('Login successful!', {
-          position: "bottom-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-      } else {
-        loginFailed();
+    Axios.post(
+      "http://localhost:8080/api/login",
+      {
+        cwlId,
+        password,
+      },
+      {
+        withCredentials: true,
       }
-    }).catch((err) => {
-      console.log(err)
-      loginFailed();
-    })
-  }
+    )
+      .then((res) => {
+        if (res.status === 200) {
+          setAuthenticated(true);
+          history.push("/");
+          toast.success("Login successful!", {
+            position: "bottom-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        } else {
+          loginFailed();
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        loginFailed();
+      });
+  };
 
   const loginFailed = () => {
     setCwlId("");
     setPassword("");
     setAuthenticated(false);
-    toast.error('Login failed. Please try again with valid credentials', {
+    toast.error("Login failed. Please try again with valid credentials", {
       position: "bottom-center",
       autoClose: false,
       hideProgressBar: true,
@@ -115,7 +123,7 @@ export default function Login() {
       draggable: true,
       progress: undefined,
     });
-  }
+  };
 
   return (
     <Grid container component="main" className={classes.root}>

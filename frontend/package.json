@@ -50,7 +50,9 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "prettier": "2.2.1"
+  },
   "aliasify": {
     "aliases": {
       "querystring": "querystring-browser"

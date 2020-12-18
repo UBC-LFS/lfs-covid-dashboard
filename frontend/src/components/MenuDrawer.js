@@ -1,27 +1,40 @@
-import React, { useState } from 'react';
-import clsx from 'clsx';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
-import { Grid, Drawer, AppBar, Toolbar, List, CssBaseline, Typography, Divider, IconButton, ListItem, ListItemIcon, ListItemText } from '@material-ui/core';
-import { Link } from 'react-router-dom';
+import React, { useState } from "react";
+import clsx from "clsx";
+import { makeStyles, useTheme } from "@material-ui/core/styles";
+import {
+  Grid,
+  Drawer,
+  AppBar,
+  Toolbar,
+  List,
+  CssBaseline,
+  Typography,
+  Divider,
+  IconButton,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@material-ui/core";
+import { Link } from "react-router-dom";
 
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import HomeIcon from '@material-ui/icons/Home';
-import ShowChartIcon from '@material-ui/icons/ShowChart';
-import AssessmentIcon from '@material-ui/icons/Assessment';
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
-import Logout from './Logout';
+import MenuIcon from "@material-ui/icons/Menu";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import HomeIcon from "@material-ui/icons/Home";
+import ShowChartIcon from "@material-ui/icons/ShowChart";
+import AssessmentIcon from "@material-ui/icons/Assessment";
+import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import Logout from "./Logout";
 
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    display: 'flex',
+    display: "flex",
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
+    transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
@@ -29,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   appBarShift: {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
+    transition: theme.transitions.create(["width", "margin"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -38,35 +51,35 @@ const useStyles = makeStyles((theme) => ({
     marginRight: 36,
   },
   hide: {
-    display: 'none',
+    display: "none",
   },
   drawer: {
     width: drawerWidth,
     flexShrink: 0,
-    whiteSpace: 'nowrap',
+    whiteSpace: "nowrap",
   },
   drawerOpen: {
     width: drawerWidth,
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
   },
   drawerClose: {
-    transition: theme.transitions.create('width', {
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    overflowX: 'hidden',
+    overflowX: "hidden",
     width: theme.spacing(7) + 1,
-    [theme.breakpoints.up('sm')]: {
+    [theme.breakpoints.up("sm")]: {
       width: theme.spacing(9) + 1,
     },
   },
   toolbar: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
     padding: theme.spacing(0, 1),
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
@@ -77,7 +90,7 @@ export default function MenuDrawer() {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
-  const [openLogout, setOpenLogout ] = useState(false);
+  const [openLogout, setOpenLogout] = useState(false);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -111,7 +124,7 @@ export default function MenuDrawer() {
           <Grid
             justify="space-between"
             alignItems="center"
-            container 
+            container
             spacing={1}
           >
             <Grid item>
@@ -120,10 +133,10 @@ export default function MenuDrawer() {
               </Typography>
             </Grid>
             <Grid item>
-              <img 
-                src={`${process.env.PUBLIC_URL + '/ubc-logo.png'}`}
+              <img
+                src={`${process.env.PUBLIC_URL + "/ubc-logo.png"}`}
                 alt="UBC Logo"
-                style={{width:"30px", height:"40px"}}
+                style={{ width: "30px", height: "40px" }}
               />
             </Grid>
           </Grid>
@@ -144,7 +157,11 @@ export default function MenuDrawer() {
       >
         <div className={classes.toolbar}>
           <IconButton onClick={handleDrawerClose}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            {theme.direction === "rtl" ? (
+              <ChevronRightIcon />
+            ) : (
+              <ChevronLeftIcon />
+            )}
           </IconButton>
         </div>
         <Divider />
@@ -153,19 +170,19 @@ export default function MenuDrawer() {
             <ListItemIcon>
               <HomeIcon />
             </ListItemIcon>
-            <ListItemText primary='Home' />
+            <ListItemText primary="Home" />
           </ListItem>
           <ListItem button component={Link} to="/stats">
             <ListItemIcon>
               <ShowChartIcon />
             </ListItemIcon>
-            <ListItemText primary='Stats' />
+            <ListItemText primary="Stats" />
           </ListItem>
           <ListItem button component={Link} to="/summary">
             <ListItemIcon>
               <AssessmentIcon />
             </ListItemIcon>
-            <ListItemText primary='Summary' />
+            <ListItemText primary="Summary" />
           </ListItem>
         </List>
         <Divider />
@@ -174,11 +191,11 @@ export default function MenuDrawer() {
             <ListItemIcon>
               <ExitToAppIcon />
             </ListItemIcon>
-            <ListItemText primary='Logout' />
+            <ListItemText primary="Logout" />
           </ListItem>
         </List>
       </Drawer>
-      <Logout openLogout={openLogout} setOpenLogout={setOpenLogout}/>
+      <Logout openLogout={openLogout} setOpenLogout={setOpenLogout} />
     </div>
   );
 }

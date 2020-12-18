@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './components/App';
-import * as serviceWorker from './serviceWorker';
-import AppStateProvider from './appState';
-import moment from 'moment-timezone';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import App from "./components/App";
+import * as serviceWorker from "./serviceWorker";
+import AppStateProvider from "./appState";
+import moment from "moment-timezone";
 moment.tz.setDefault("America/Los_Angeles");
 
 ReactDOM.render(
@@ -13,7 +13,7 @@ ReactDOM.render(
       <App />
     </AppStateProvider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change
