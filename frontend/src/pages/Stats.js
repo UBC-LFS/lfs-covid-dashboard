@@ -8,11 +8,11 @@ import {
   CardMedia,
 } from "@material-ui/core";
 
-import MenuDrawer from "./MenuDrawer";
-import BuildingOccupancyChart from "./BuildingOccupancyChart";
-import CheckInTimeChart from "./CheckInTimeChart";
-import CheckInByDateChart from "./CheckInByDateChart";
-import CheckInByBuilding from "./CheckInByBuilding";
+import MenuDrawer from "../components/MenuDrawer";
+import BuildingOccupancyChart from "../components/BuildingOccupancyChart";
+import CheckInTimeChart from "../components/CheckInTimeChart";
+import CheckInByDateChart from "../components/CheckInByDateChart";
+import CheckInByBuilding from "../components/CheckInByBuilding";
 import Axios from "axios";
 import { startCase } from "lodash";
 

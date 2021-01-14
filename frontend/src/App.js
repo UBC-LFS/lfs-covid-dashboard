@@ -13,12 +13,12 @@ import MomentUtils from "@date-io/moment";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Cookies from "js-cookie";
 
-import Home from "./Home";
-import Stats from "./Stats";
-import Summary from "./Summary";
-import Login from "./Login";
-import { useAppState } from "../appState";
-import PrivateRoute from "./PrivateRoute";
+import Home from "./pages/Home";
+import Stats from "./pages/Stats";
+import Summary from "./pages/Summary";
+import Login from "./pages/Login";
+import { useAppState } from "./appState";
+import PrivateRoute from "./components/PrivateRoute";
 
 Chart.defaults.global.plugins.datalabels.display = false;
 

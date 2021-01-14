@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles, Grid, Typography, Box } from "@material-ui/core";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
+import { DatePicker } from "@material-ui/pickers";
 import moment from "moment-timezone";
-import MenuDrawer from "./MenuDrawer";
-import SummaryTable from "./SummaryTable";
+import MenuDrawer from "../components/MenuDrawer";
+import SummaryTable from "../components/SummaryTable";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -30,28 +31,50 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Summary({ summary }) {
   const classes = useStyles();
-  const {
-    checkInThisWeek,
-    checkInLastWeek,
-    totalCheckInThisWeek,
-    totalCheckInLastWeek,
-  } = summary;
 
-  let averageThisWeek = null;
-  let wowTotalCheckIn = null;
-  let wowAvgCheckIn = null;
+  const [checkInThisWeek, setCheckInThisWeek] = useState();
+  const [checkInLastWeek, setCheckInLastWeek] = useState();
 
-  if (Object.keys(summary).length) {
-    averageThisWeek = Math.round(
-      totalCheckInThisWeek / Object.keys(checkInThisWeek).length
-    );
-    let averageLastWeek =
-      totalCheckInLastWeek / Object.keys(checkInLastWeek).length;
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-    wowTotalCheckIn =
-      (totalCheckInThisWeek - totalCheckInLastWeek) / totalCheckInLastWeek;
-    wowAvgCheckIn = (averageThisWeek - averageLastWeek) / averageLastWeek;
-  }
+  const [totalCheckInThisWeek, setTotalCheckInThisWeek] = useState(0);
+
+  const [averageThisWeek, setAverageThisWeek] = useState(null);
+  const [wowTotalCheckIn, setWowTotalCheckIn] = useState(null);
+  const [wowAvgCheckIn, setWowAvgCheckIn] = useState(null);
+
+  useEffect(() => {
+    const selectedWeek = moment(selectedDate).startOf("week").format("YYYY-MM-DD");
+    const lastWeek = moment(selectedWeek).subtract(7, 'days').format("YYYY-MM-DD");
+    setCheckInThisWeek(summary[selectedWeek]);
+    setCheckInLastWeek(summary[lastWeek]);
+
+    let totCheckInThisWeek = 0;
+    let totCheckInLastWeek = 0;
+    if (Object.keys(summary).length) {
+      if(summary[selectedWeek]){
+        for(const day in summary[selectedWeek]){
+          totCheckInThisWeek += summary[selectedWeek][day].count;
+        }
+      }
+      if(summary[lastWeek]){
+        for(const day in summary[lastWeek]){
+          totCheckInLastWeek += summary[lastWeek][day].count;
+        }
+      }
+      setTotalCheckInThisWeek(totCheckInThisWeek);
+      const avgThisWeek = summary[selectedWeek] ? Math.round(
+        totCheckInThisWeek / Object.keys(summary[selectedWeek]).length
+      ) : 0;
+      setAverageThisWeek(avgThisWeek);
+  
+      const averageLastWeek = summary[lastWeek] ?
+        totCheckInLastWeek / Object.keys(summary[lastWeek]).length : 0;
+      setWowTotalCheckIn(totCheckInLastWeek ? (totCheckInThisWeek - totCheckInLastWeek) / totCheckInLastWeek : null);
+      setWowAvgCheckIn(averageLastWeek ? (avgThisWeek - averageLastWeek) / averageLastWeek : null);
+    }
+  }, [selectedDate]);
+
 
   return (
     <div className={classes.root}>
@@ -61,16 +84,16 @@ export default function Summary({ summary }) {
         <Typography
           variant="h4"
           gutterBottom
-        >{`Summary for The Week of ${moment()
+        >{`Summary for The Week of ${moment(selectedDate)
           .startOf("week")
-          .format("MMM Do")} - ${moment()
+          .format("MMM Do")} - ${moment(selectedDate)
           .endOf("week")
           .format("Do, YYYY")}`}</Typography>
-        <Grid container spacing={1}>
+        <Grid container spacing={3}>
           <Grid container item xs={12} spacing={1}>
             <Grid item xs={3} className={classes.borders}>
               <Typography variant="h6" gutterBottom>
-                TOTAL CHECK-IN THIS WEEK
+                TOTAL CHECK-IN OF WEEK
               </Typography>
               <Typography variant="h6" color="textSecondary" gutterBottom>
                 {totalCheckInThisWeek}
@@ -104,7 +127,7 @@ export default function Summary({ summary }) {
                     ? ""
                     : `${Math.round(
                         wowTotalCheckIn * 100
-                      )}% from previous week`}
+                      )}% from prior week`}
                 </Typography>
               </Box>
             </Grid>
@@ -148,11 +171,24 @@ export default function Summary({ summary }) {
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <SummaryTable
-              checkInThisWeek={checkInThisWeek}
-              checkInLastWeek={checkInLastWeek}
-            />
+            <Box display="flex" justifyContent='flex-end'>
+              <DatePicker
+                label="Week picker"
+                inputVariant="outlined"
+                value={selectedDate}
+                disableFuture
+                format="DD/MM/yyyy"
+                views={["year", "month", "date"]}
+                onChange={setSelectedDate}
+                minDate={moment("2021-01-10").toDate()}
+              />
+            </Box>
           </Grid>
+          <SummaryTable
+            date={moment(selectedDate).startOf("week").format("YYYY-MM-DD")}
+            checkInThisWeek={checkInThisWeek}
+            checkInLastWeek={checkInLastWeek}
+          />
         </Grid>
       </main>
     </div>

@@ -28,18 +28,11 @@ export default function CheckInByDateChart({ checkInByDate }) {
       xAxes: [
         {
           ticks: {
-            min: moment().startOf("week").format("YYYY-MM-DD"),
-            max: moment().endOf("week").format("YYYY-MM-DD"),
-            // callback: (value, index) => index === 24 ? '24:00' : value
+            min: moment().startOf("week").format("YYYY-M-DD"),
+            max: moment().endOf("week").format("YYYY-M-DD"),
           },
         },
       ],
-      // yAxes: [{
-      //   ticks: {
-      //     beginAtZero: true,
-      //     stepSize: 5
-      //   }
-      // }]
     },
     plugins: {
       zoom: {

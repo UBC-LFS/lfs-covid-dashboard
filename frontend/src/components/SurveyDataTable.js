@@ -40,7 +40,7 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 };
 
-const columns = [
+const columns = () => [
   { field: "firstName", title: "First name" },
   { field: "lastName", title: "Last name" },
   {
@@ -66,7 +66,7 @@ export default function SurveyDataTable({ records, surveyType }) {
         title={
           surveyType === "in" ? "Check-in Responses" : "Check-out Responses"
         }
-        columns={columns}
+        columns={columns()}
         data={records}
         options={{
           exportButton: true,

@@ -158,9 +158,9 @@ const getAreaOfActivity = (buildings, fnhLevels, mcmlLevels, otherAreas) => {
 
 const sortRecordsByTime = (records) => {
   records.sort((a, b) => {
-    if (moment(a.time).isBefore(moment(b.time))) {
+    if (moment(a.time, "YYYY-MM-DDTHH:mm").isBefore(moment(b.time, "YYYY-MM-DD HH:mm"))) {
       return -1;
-    } else if (moment(a.time).isAfter(moment(b.time))) {
+    } else if (moment(a.time, "YYYY-MM-DD HH:mm").isAfter(moment(b.time, "YYYY-MM-DD HH:mm"))) {
       return 1;
     } else {
       return 0;
@@ -174,7 +174,9 @@ const buildCheckInByBuilding = (records) => {
       const mcml = curr.areas.some((area) => area.startsWith("MCML"));
       const fnh = curr.areas.some((area) => area.startsWith("FNH"));
       const farm = curr.areas.includes("UBC Farm");
-      const greenhouse = curr.areas.includes("Greenhouse");
+      const totemField = curr.areas.includes("Totem Field");
+      const horticultureGreenhouse = curr.areas.includes("Horticulture Greenhouse");
+      const southCampusGreenhouse = curr.areas.includes("South Campus Greenhouse");
       const other = curr.areas.some(
         (area) =>
           !area.startsWith("FNH") &&
@@ -191,8 +193,14 @@ const buildCheckInByBuilding = (records) => {
       if (farm) {
         acc["UBC Farm"]++;
       }
-      if (greenhouse) {
-        acc["Greenhouse"]++;
+      if (horticultureGreenhouse) {
+        acc["Horticulture Greenhouse"]++;
+      }
+      if (southCampusGreenhouse) {
+        acc["South Campus Greenhouse"]++;
+      }
+      if (totemField) {
+        acc["Totem Field"]++;
       }
       if (other) {
         acc["Other Areas"]++;
@@ -203,7 +211,9 @@ const buildCheckInByBuilding = (records) => {
       FNH: 0,
       MCML: 0,
       "UBC Farm": 0,
-      Greenhouse: 0,
+      "Totem Field": 0,
+      "Horticulture Greenhouse": 0,
+      "South Campus Greenhouse": 0,
       "Other Areas": 0,
     }
   );

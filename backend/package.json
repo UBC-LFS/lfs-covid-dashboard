@@ -19,6 +19,7 @@
     "ldapjs": "^2.2.2",
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.32",
+    "mongoose": "^5.11.8",
     "morgan": "^1.10.0",
     "node-qualtrics-api": "file:node-qualtrics-api-2.tar"
   },

@@ -7,6 +7,8 @@ const path = require("path");
 const ldap = require("ldapjs");
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
+const mongoose = require("mongoose");
+const { CheckInRecord, CheckOutRecord, FobRecord } = require("./record.model");
 
 const {
   fetchJSONResponseReport,
@@ -25,6 +27,20 @@ const downloadEveryMinutes = 10;
 
 const privateKEY = fs.readFileSync("./private.key", "utf8");
 
+let numCheckInRecords = 0;
+let numCheckOutRecords = 0;
+
+mongoose.connect('mongodb://localhost:27017/records', {
+  user: process.env.MONGO_ROOT_USERNAME,
+  pass: process.env.MONGO_ROOT_PASSWORD,
+  useNewUrlParser: true 
+});
+
+const connection = mongoose.connection;
+connection.once('open', function() {
+    console.log("MongoDB database connection established successfully");
+})
+
 // configure .env file
 require("dotenv").config();
 
@@ -32,118 +48,71 @@ require("dotenv").config();
  * Generates object containing all loans mapped to their corresponding student/employee number
  * @return {Promise} a promise that resolves to a student/employee number loan mapping object
  */
-const generateOutputJSON = async () => {
-  let checkInResponses = {};
-  let checkOutResponses = {};
-  let fileModifiedOn;
+const generateOutputJSON = async (callback, config) => {
+  const { responses: checkInResponses} = await fetchJSONResponseReport(checkInSurveyName);
+  const { responses: checkOutResponses} = await fetchJSONResponseReport(checkOutSurveyName);
 
-  try {
-    const { mtimeMs } = fs.statSync(checkInSurveyName + ".json");
-    fileModifiedOn = Math.floor(mtimeMs);
-  } catch (e) {
-    fileModifiedOn = null;
-  }
-
-  if (
-    !fileModifiedOn ||
-    Date.now() - fileModifiedOn >= downloadEveryMinutes * 60000
-  ) {
-    console.log(
-      `File not found or created more than ${downloadEveryMinutes} minutes ago. Downloading..."`
-    );
-    checkInResponses = await fetchJSONResponseReport(checkInSurveyName);
-    checkOutResponses = await fetchJSONResponseReport(checkOutSurveyName);
-  } else {
-    console.log("Recent file found. Reading content...");
-    checkInResponses = JSON.parse(fs.readFileSync(checkInSurveyName + ".json"));
-    checkOutResponses = JSON.parse(
-      fs.readFileSync(checkOutSurveyName + ".json")
-    );
-  }
-
-  if (checkInResponses.responses) {
-    return computeCvoidStats(
-      checkInResponses.responses,
-      checkOutResponses.responses
-    );
+  if (checkInResponses) {
+    return callback({
+      checkInResponses,
+      checkOutResponses,
+      ...config
+    });
   }
 
   return {};
 };
 
-const computeCvoidStats = (checkInResponses, checkOutResponses) => {
+const computeCvoidStats = async () => {
+  const checkInResponses = await CheckInRecord.find();
+  const checkOutResponses = await CheckOutRecord.find();
+
   const checkInRecords = {};
   let numCheckInLast7Days = 0;
   let numCheckInLast31Days = 0;
   checkInResponses.forEach((response) => {
-    if (response && response.values && response.values.finished) {
-      const { recordedDate: rawRecordedDate } = response.values;
-      const recordedDate = moment(rawRecordedDate);
+      const { areas, date, firstName, lastName, comments } = response;
+      const recordedDate = moment(date);
 
-      if (recordedDate.isAfter("2020-10-16", "day")) {
-        const {
-          QID10: buildings,
-          QID13: fnhLevels,
-          QID14: mcmlLevels,
-        } = response.labels;
-        const {
-          QID3_4: firstName,
-          QID3_5: lastName,
-          QID10_TEXT: otherAreas,
-          QID15_TEXT: comments,
-        } = response.values;
+      if (!checkInRecords[recordedDate.year()]) {
+        checkInRecords[recordedDate.year()] = {};
+      }
 
-        let areas = [];
-        if (buildings) {
-          areas = getAreaOfActivity(
-            buildings,
-            fnhLevels,
-            mcmlLevels,
-            otherAreas
-          );
-        }
+      if (!checkInRecords[recordedDate.year()][recordedDate.month() + 1]) {
+        checkInRecords[recordedDate.year()][recordedDate.month() + 1] = {};
+      }
 
-        if (!checkInRecords[recordedDate.year()]) {
-          checkInRecords[recordedDate.year()] = {};
-        }
-
-        if (!checkInRecords[recordedDate.year()][recordedDate.month() + 1]) {
-          checkInRecords[recordedDate.year()][recordedDate.month() + 1] = {};
-        }
-
-        if (
-          !checkInRecords[recordedDate.year()][recordedDate.month() + 1][
-            recordedDate.date()
-          ]
-        ) {
-          checkInRecords[recordedDate.year()][recordedDate.month() + 1][
-            recordedDate.date()
-          ] = [];
-        }
-
-        const record = {
-          firstName,
-          lastName,
-          time: recordedDate.format("YYYY-MM-DDTHH:mm"),
-          areas,
-          comments,
-        };
-
+      if (
+        !checkInRecords[recordedDate.year()][recordedDate.month() + 1][
+          recordedDate.date()
+        ]
+      ) {
         checkInRecords[recordedDate.year()][recordedDate.month() + 1][
           recordedDate.date()
-        ].push(record);
+        ] = [];
+      }
 
-        //Add to total responses in past 7 and 31 days
-        //if the response is recorded in the last 31 days
-        if (recordedDate.isAfter(moment().subtract(31, "days"), "day")) {
-          numCheckInLast31Days++;
-          //if the response is recorded in the past 7 days
-          if (recordedDate.isAfter(moment().subtract(7, "days"), "day")) {
-            numCheckInLast7Days++;
-          }
+      const record = {
+        firstName,
+        lastName,
+        time: recordedDate.format("YYYY-MM-DDTHH:mm"),
+        areas,
+        comments,
+      };
+
+      checkInRecords[recordedDate.year()][recordedDate.month() + 1][
+        recordedDate.date()
+      ].push(record);
+
+      //Add to total responses in past 7 and 31 days
+      //if the response is recorded in the last 31 days
+      if (recordedDate.isAfter(moment().subtract(31, "days"), "day")) {
+        numCheckInLast31Days++;
+        //if the response is recorded in the past 7 days
+        if (recordedDate.isAfter(moment().subtract(7, "days"), "day")) {
+          numCheckInLast7Days++;
         }
       }
-    }
   });
 
   const checkInRecordsToday =
@@ -193,12 +162,10 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
   // calculate check-ins by building today
   const checkInByBuilding = buildCheckInByBuilding(checkInRecordsToday);
 
-  const checkInThisWeek = {};
-  const checkInLastWeek = {};
-  let totalCheckInThisWeek = 0;
-  let totalCheckInLastWeek = 0;
-
+  const summary = {};
   const checkInByDate = [];
+
+  // calculate check-ins by date and weekly check-in summaries
   for (let year in checkInRecords) {
     for (let month in checkInRecords[year]) {
       for (let date in checkInRecords[year][month]) {
@@ -210,31 +177,15 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
           count,
         });
 
-        const isThisWeek = moment().startOf("week").isSameOrBefore(time, "day");
-        const isLastWeek =
-          moment()
-            .subtract(7, "days")
-            .startOf("week")
-            .isSameOrBefore(time, "day") && !isThisWeek;
+        if (!summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")]) {
+          summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")] = {};
+        }
 
-        // Totals check in this week
-        if (isThisWeek) {
-          const checksInsThisWeekByBuilding = buildCheckInByBuilding(
+        summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")][moment(time, "YYYY-MM-DD").format("YYYY-MM-DD")] = {
+          count,
+          byBuilding: buildCheckInByBuilding(
             checkInRecords[year][month][date]
-          );
-          checkInThisWeek[moment(time, "YYYY-MM-DD").format("dddd")] = {
-            count,
-            byBuilding: checksInsThisWeekByBuilding,
-          };
-          totalCheckInThisWeek += count;
-        } else if (isLastWeek) {
-          // Totals check in last week
-          // const checksInsThisWeekByBuilding = buildCheckInByBuilding(checkInRecords[year][month][date]);
-          checkInLastWeek[moment(time, "YYYY-MM-DD").format("dddd")] = {
-            count,
-            // byBuilding: checksInsThisWeekByBuilding
-          };
-          totalCheckInLastWeek += count;
+          ),
         }
       }
     }
@@ -244,65 +195,38 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
   //Handle check-out responses
   const checkOutRecords = {};
   checkOutResponses.forEach((response) => {
-    if (response && response.values && response.values.finished) {
-      const { recordedDate: rawRecordedDate } = response.values;
-      const recordedDate = moment(rawRecordedDate);
+    const { areas, date, firstName, lastName, comments } = response;
+    const recordedDate = moment(date);
 
-      if (recordedDate.isAfter("2020-11-23", "day")) {
-        const {
-          QID14: buildings,
-          QID16: fnhAreas,
-          QID13: mcmlAreas,
-          QID17: commonAreas,
-        } = response.labels;
-        const {
-          QID3_4: firstName,
-          QID3_5: lastName,
-          QID14_6_TEXT: otherBuildings,
-          QID15_TEXT: comments,
-        } = response.values;
-
-        let areas = [];
-        if (buildings) {
-          areas = getAreaOfActivity(
-            buildings,
-            fnhAreas,
-            mcmlAreas,
-            otherBuildings
-          );
-        }
-
-        if (!checkOutRecords[recordedDate.year()]) {
-          checkOutRecords[recordedDate.year()] = {};
-        }
-
-        if (!checkOutRecords[recordedDate.year()][recordedDate.month() + 1]) {
-          checkOutRecords[recordedDate.year()][recordedDate.month() + 1] = {};
-        }
-
-        if (
-          !checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
-            recordedDate.date()
-          ]
-        ) {
-          checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
-            recordedDate.date()
-          ] = [];
-        }
-
-        const record = {
-          firstName,
-          lastName,
-          time: recordedDate.format("YYYY-MM-DDTHH:mm"),
-          areas,
-          comments,
-        };
-
-        checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
-          recordedDate.date()
-        ].push(record);
-      }
+    if (!checkOutRecords[recordedDate.year()]) {
+      checkOutRecords[recordedDate.year()] = {};
     }
+
+    if (!checkOutRecords[recordedDate.year()][recordedDate.month() + 1]) {
+      checkOutRecords[recordedDate.year()][recordedDate.month() + 1] = {};
+    }
+
+    if (
+      !checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
+        recordedDate.date()
+      ]
+    ) {
+      checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
+        recordedDate.date()
+      ] = [];
+    }
+
+    const record = {
+      firstName,
+      lastName,
+      time: recordedDate.format("YYYY-MM-DDTHH:mm"),
+      areas,
+      comments,
+    };
+
+    checkOutRecords[recordedDate.year()][recordedDate.month() + 1][
+      recordedDate.date()
+    ].push(record);
   });
   const checkOutRecordsToday =
     checkOutRecords[moment().year()][moment().month() + 1][moment().date()] ||
@@ -331,17 +255,147 @@ const computeCvoidStats = (checkInResponses, checkOutResponses) => {
         "FNH Level 2": 42,
         "FNH Level 3": 38,
         "UBC Farm": null,
-        Greenhouse: null,
+        "Totem Field": null,
+        "Horticulture Greenhouse": null,
+        "South Campus Greenhouse": null,
       },
     },
-    summary: {
-      totalCheckInThisWeek,
-      totalCheckInLastWeek,
-      checkInThisWeek,
-      checkInLastWeek,
-    },
+    summary,
   };
 };
+
+const updateRecords = ({ checkInResponses, checkOutResponses, time = moment(), period = "day" }) => {  
+  if(checkInResponses.length > numCheckInRecords){
+    numCheckInRecords = checkInResponses.length;
+    checkInResponses.forEach(async (response) => {
+      if (response && response.values && response.values.finished) {
+        const { recordedDate: rawRecordedDate, _recordId: _id } = response.values;
+        const recordedDate = moment(rawRecordedDate);
+        
+        if (recordedDate.isSameOrAfter(time, period)) {
+          const {
+            QID10: buildings,
+            QID13: fnhLevels,
+            QID14: mcmlLevels,
+          } = response.labels;
+          const {
+            QID3_4: firstName,
+            QID3_5: lastName,
+            QID10_TEXT: otherAreas,
+            QID15_TEXT: comments,
+          } = response.values;
+  
+          let areas = [];
+          if (buildings) {
+            areas = getAreaOfActivity(
+              buildings,
+              fnhLevels,
+              mcmlLevels,
+              otherAreas
+            );
+          }
+  
+          const checkInRecord = new CheckInRecord({
+            _id,
+            firstName,
+            lastName,
+            date: recordedDate.toDate(),
+            areas,
+            comments,
+          });
+          await checkInRecord.save();
+        }
+      }
+    });
+  }
+
+  if(checkOutResponses.length > numCheckOutRecords){
+    numCheckOutRecords = checkOutResponses.length;
+    checkOutResponses.forEach(async (response) => {
+      if (response && response.values && response.values.finished) {
+        const { recordedDate: rawRecordedDate, _recordId: _id } = response.values;
+        const recordedDate = moment(rawRecordedDate);
+
+        if (recordedDate.isSameOrAfter(time, period)) {
+          const {
+            QID14: buildings,
+            QID16: fnhAreas,
+            QID13: mcmlAreas,
+          } = response.labels;
+          const {
+            QID3_4: firstName,
+            QID3_5: lastName,
+            QID14_6_TEXT: otherBuildings,
+            QID15_TEXT: comments,
+          } = response.values;
+
+          let areas = [];
+          if (buildings) {
+            areas = getAreaOfActivity(
+              buildings,
+              fnhAreas,
+              mcmlAreas,
+              otherBuildings
+            );
+          }
+
+          const checkOutRecord = new CheckOutRecord({
+            _id,
+            firstName,
+            lastName,
+            date: recordedDate.toDate(),
+            areas,
+            comments,
+          });
+          await checkOutRecord.save();
+        }
+      }
+    });
+  }
+  console.log(`records updated ${moment().format("YYYY-MM-DDTHH:mm")}`);
+};
+
+const getFobData = async (week) => {
+  try {
+    const fobData = await FobRecord.findOne({ week });
+    return {
+      status: 200,
+      fobData
+    }
+  } catch (err) {
+    return {
+      status: 500,
+      error: err
+    };
+  }
+}
+
+const updateFobData = async ({ week, newData }) => {
+  try {
+    await FobRecord.findOneAndUpdate({ week }, {
+      week,
+      data: new Map(JSON.parse(newData))
+    }, {
+      upsert: true,
+      new: true,
+    });
+    return {
+      status: 200
+    }
+  } catch (err) {
+    console.log(err);
+    return {
+      status: 500,
+      error: err
+    };
+  }
+}
+
+generateOutputJSON(updateRecords, { time: "2021-01-10" });
+
+setInterval(function(){
+  generateOutputJSON(updateRecords, { time: moment().subtract(10, 'minutes'), period: "minute"});
+}, downloadEveryMinutes * 60000);
 
 const app = express();
 
@@ -364,7 +418,6 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// loans endpoint
 app.get(
   "/api/covid",
   expressJwt({
@@ -373,7 +426,7 @@ app.get(
     algorithms: ["RS256"],
   }),
   (req, res) => {
-    generateOutputJSON()
+    computeCvoidStats()
       .then((stats) => {
         return res.json(stats);
       })
@@ -381,6 +434,30 @@ app.get(
         console.log(err);
         return res.status(500).send();
       });
+  }
+);
+
+app.post(
+  "/api/fob/update",
+  expressJwt({
+    secret: privateKEY,
+    issuer: "UBC LFS",
+    algorithms: ["RS256"],
+  }),
+  (req, res) => {
+    updateFobData(req.body).then(result => res.status(result.status).send(result));
+  }
+);
+
+app.post(
+  "/api/fob/query",
+  expressJwt({
+    secret: privateKEY,
+    issuer: "UBC LFS",
+    algorithms: ["RS256"],
+  }),
+  (req, res) => {
+    getFobData(req.body.week).then(result => res.status(result.status).send(result));
   }
 );
 

@@ -11,8 +11,8 @@ import isEmpty from "lodash/isEmpty";
 import moment from "moment-timezone";
 import { ToastContainer } from "react-toastify";
 
-import MenuDrawer from "./MenuDrawer";
-import SurveyDataTable from "./SurveyDataTable";
+import MenuDrawer from "../components/MenuDrawer";
+import SurveyDataTable from "../components/SurveyDataTable";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Home({ checkInRecords, checkOutRecords }) {
   const classes = useStyles();
-  const [surveyType, setSurveyType] = React.useState("in");
+  const [surveyType, setSurveyType] = useState("in");
   const [selectedDate, handleDateChange] = useState(new Date());
   const [records, setRecords] = useState([]);
 
@@ -83,17 +83,14 @@ export default function Home({ checkInRecords, checkOutRecords }) {
           </Select>
           <Box px={3}>
             <DatePicker
+              label="Date picker"
               inputVariant="outlined"
               value={selectedDate}
               disableFuture
               format="DD/MM/yyyy"
               views={["year", "month", "date"]}
               onChange={handleDateChange}
-              minDate={
-                surveyType === "in"
-                  ? moment("2020-10-17").toDate()
-                  : moment("2020-11-22").toDate()
-              }
+              minDate={ moment("2021-01-10").toDate()}
             />
           </Box>
         </Box>

@@ -1,4 +1,5 @@
-import React, { forwardRef } from "react";
+import Axios from "axios";
+import React, { forwardRef, useState, useEffect } from "react";
 import moment from "moment-timezone";
 import MaterialTable from "material-table";
 import AddBox from "@material-ui/icons/AddBox";
@@ -16,6 +17,11 @@ import Remove from "@material-ui/icons/Remove";
 import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
+import FobDataChart from "./FobDataChart";
+import { Grid } from "@material-ui/core";
+import { ToastContainer, toast } from "react-toastify";
+import Cookies from "js-cookie";
+import { format } from "url";
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -41,53 +47,221 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 };
 
-const columns = [
-  { field: "date", title: "Date" },
-  { field: "day", title: "Day of Week" },
-  { field: "thisWeek", title: "Total" },
-  { field: "lastWeek", title: "Total Prev Week" },
-  { field: "wow", title: "Week-over-week" },
-  { field: "FNH", title: "FNH" },
-  { field: "MCML", title: "MCML" },
-  { field: "UBC Farm", title: "UBC Farm" },
-  { field: "Greenhouse", title: "Greenhouse" },
-  { field: "Other Areas", title: "Other Areas" },
+const columns = () => [
+  { field: "date", title: "Date", editable: 'never' },
+  { field: "day", title: "Day of Week", editable: 'never' },
+  { field: "thisWeek", title: "Total", editable: 'never' },
+  { field: "lastWeek", title: "Total Prev Week", editable: 'never' },
+  { field: "wow", title: "Week-over-week", editable: 'never' },
+  { field: "FNH", title: "FNH", editable: 'never' },
+  { field: "MCML", title: "MCML", editable: 'never' },
+  { field: "UBC Farm", title: "UBC Farm", editable: 'never' },
+  { field: "Greenhouse", title: "Greenhouse", editable: 'never' },
+  { field: "Other Areas", title: "Other Areas", editable: 'never' },
+  { field: "fnhFob", title: "FNH FOB Data" },
+  { field: "mcmlFob", title: "MCML FOB Data" }
 ];
 
-export default function SummaryTable({ checkInThisWeek, checkInLastWeek }) {
-  const data = [];
-  for (let day in checkInLastWeek) {
-    let wow = null;
-    if (typeof checkInThisWeek[day] !== "undefined") {
-      wow =
-        (checkInThisWeek[day].count - checkInLastWeek[day].count) /
-        checkInLastWeek[day].count;
-      wow = Math.round(wow * 100) + "%";
-    }
-    data.push({
-      date: moment().day(day).format("MMM Do, YYYY"),
-      day,
-      thisWeek: checkInThisWeek[day] ? checkInThisWeek[day].count : null,
-      lastWeek: checkInLastWeek[day].count,
-      wow,
-      ...(checkInThisWeek[day] ? checkInThisWeek[day].byBuilding : null),
+export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek }) {
+  const token = Cookies.get("access_token");
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    queryFobData(date).then(({ data: fobData }) => {
+      let tempArr = [];
+      for (let day in checkInThisWeek) {
+        let wow = checkInLastWeek && checkInLastWeek[day] ?
+          (checkInThisWeek[day].count - checkInLastWeek[day].count) /
+          checkInLastWeek[day].count : 0;
+        wow = Math.round(wow * 100) + "%";
+        let fnhFob = 0;
+        let mcmlFob = 0;
+        if(fobData && fobData[moment(day).format("MMM Do, YYYY")]){
+          ({ fnhFob, mcmlFob } = JSON.parse(fobData[moment(day).format("MMM Do, YYYY")]));
+          
+        }
+        let temp = {
+          date: moment(day).format("MMM Do, YYYY"),
+          day: moment(day).format("dddd"),
+          thisWeek: checkInThisWeek[day].count,
+          lastWeek: checkInLastWeek && checkInLastWeek[day] ? checkInLastWeek[day].count : null,
+          wow,
+          fnhFob,
+          mcmlFob,
+          ...checkInThisWeek[day].byBuilding,
+        }
+        tempArr.push(temp);
+      }
+      setData(tempArr);
     });
+  }, [date, checkInThisWeek, checkInLastWeek])
+
+  const queryFobData = (date) => {
+    return Axios.post(
+      "http://localhost:8080/api/fob/query",
+      {
+        week: date
+      },
+      {
+        withCredentials: true,
+        headers: { Authorization: token },
+      }
+    )
+      .then((res) => {
+        if (res.status === 200) {
+          return res.data.fobData || {};
+        } else {
+          toast.error("Query for fob data failed", {
+            position: "bottom-center",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Query for fob data failed 1", {
+          position: "bottom-center",
+          autoClose: false,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      });
   }
+
+  const updateFobData = ({week, newData}) => {
+    Axios.post(
+      "http://localhost:8080/api/fob/update",
+      {
+        week,
+        newData
+      },
+      {
+        withCredentials: true,
+        headers: { Authorization: token },
+      }
+    )
+      .then((res) => {
+        if (res.status === 200) {
+          toast.success("Fob data updated", {
+            position: "bottom-center",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        } else {
+          toast.error("Fob data update failed", {
+            position: "bottom-center",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Fob data update failed 1", {
+          position: "bottom-center",
+          autoClose: false,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      });
+  }
+
   return (
-    <div style={{ height: 650, width: "100%" }}>
-      {checkInThisWeek && checkInLastWeek ? (
-        <MaterialTable
-          columns={columns}
-          data={data}
-          options={{
-            exportButton: true,
-            paging: false,
-            search: false,
-            showTitle: false,
-          }}
-          icons={tableIcons}
-        />
-      ) : null}
-    </div>
+    <>
+      <FobDataChart data={data}/>
+      <Grid item xs={12}>
+        <div style={{ width: "100%" }}>
+          {checkInThisWeek ? (
+            <MaterialTable
+              localization={{
+                header : {
+                  actions: ''
+                }
+              }}
+              columns={columns()}
+              data={data}
+              options={{
+                exportButton: true,
+                paging: false,
+                search: false,
+                showTitle: false,
+              }}
+              icons={tableIcons}
+              // cellEditable={{
+              //   cellStyle: {},
+              //   onCellEditApproved: (newValue, oldValue, rowData, columnDef) => {
+              //       return new Promise((resolve, reject) => {
+              //           setData(prevData => prevData.map(day => {
+              //             return day.date === rowData.date ? {
+              //               ...rowData,
+              //               [columnDef.field]: newValue,
+              //             } : day
+              //           }))
+              //           console.log(newValue, oldValue, rowData, columnDef)
+              //           resolve();
+              //       });
+              //   },
+              // }}
+              editable={{
+                isDeleteHidden: rowData => true,
+                onBulkUpdate: changes => 
+                  new Promise((resolve, reject) => {
+                      let changeArr = [];
+                      for(const change in changes){
+                        const { newData: { date, fnhFob, mcmlFob } } = changes[change];
+                        changeArr.push([date, JSON.stringify({
+                          fnhFob: parseInt(fnhFob),
+                          mcmlFob: parseInt(mcmlFob)
+                        })]);
+                      }
+                      const fobMap = new Map(changeArr);
+                      data.forEach(day => {
+                        if(!fobMap.has(day.date)){
+                          fobMap.set(day.date, JSON.stringify({
+                            fnhFob: day.fnhFob,
+                            mcmlFob: day.mcmlFob
+                          }))
+                        }
+                      })
+                      updateFobData({week: date, newData: JSON.stringify([...fobMap])});
+                      setData(prevData => prevData.map(day => {
+                        const { fnhFob, mcmlFob } = JSON.parse(fobMap.get(day.date));
+                        return {
+                          ...day,
+                          fnhFob,
+                          mcmlFob
+                        }
+                      }))
+                      resolve();
+                }),
+                onRowDelete: oldData =>
+                  new Promise((resolve, reject) => {
+                    resolve();
+                  })
+              }}
+            />
+          ) : null}
+        </div>
+      </Grid>
+      <ToastContainer />
+    </>
   );
 }

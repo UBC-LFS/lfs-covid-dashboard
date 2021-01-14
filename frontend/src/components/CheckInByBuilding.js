@@ -11,8 +11,12 @@ export default function CheckInByBuilding({ checkInByBuilding }) {
         return "#aa2e25";
       case "FNH":
         return "#2196f3";
-      case "Greenhouse":
+      case "Horticulture Greenhouse":
         return "#ff1744";
+      case "South Campus Greenhouse":
+        return "#f4d03f";
+      case "Totem Field":
+        return "#7d3c98";
       default:
         return "#ff9100";
     }
