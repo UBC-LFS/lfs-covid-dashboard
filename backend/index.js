@@ -30,9 +30,7 @@ const privateKEY = fs.readFileSync("./private.key", "utf8");
 let numCheckInRecords = 0;
 let numCheckOutRecords = 0;
 
-mongoose.connect('mongodb://localhost:27017/records', {
-  user: process.env.MONGO_ROOT_USERNAME,
-  pass: process.env.MONGO_ROOT_PASSWORD,
+mongoose.connect(process.env.MONGO_CONNECTION_ADDRESS, {
   useNewUrlParser: true 
 });
 

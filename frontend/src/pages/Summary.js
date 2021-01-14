@@ -73,7 +73,7 @@ export default function Summary({ summary }) {
       setWowTotalCheckIn(totCheckInLastWeek ? (totCheckInThisWeek - totCheckInLastWeek) / totCheckInLastWeek : null);
       setWowAvgCheckIn(averageLastWeek ? (avgThisWeek - averageLastWeek) / averageLastWeek : null);
     }
-  }, [selectedDate]);
+  }, [selectedDate, summary]);
 
 
   return (

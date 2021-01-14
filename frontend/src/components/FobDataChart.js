@@ -50,22 +50,6 @@ export default function FobDataChart({ data }) {
       }
     })
   };
-  const annotation = {
-    annotations: [
-      {
-        type: "line",
-        mode: "vertical",
-        scaleID: "x-axis-0",
-        value: "109",
-        borderColor: "red",
-        label: {
-          content: "Max Occupant: 109",
-          enabled: true,
-          position: "top"
-        }
-      }
-    ]
-  }
 
   return (
     <>

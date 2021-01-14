@@ -1,5 +1,5 @@
 import Axios from "axios";
-import React, { forwardRef, useState, useEffect } from "react";
+import React, { forwardRef, useState, useEffect, useCallback } from "react";
 import moment from "moment-timezone";
 import MaterialTable from "material-table";
 import AddBox from "@material-ui/icons/AddBox";
@@ -21,7 +21,6 @@ import FobDataChart from "./FobDataChart";
 import { Grid } from "@material-ui/core";
 import { ToastContainer, toast } from "react-toastify";
 import Cookies from "js-cookie";
-import { format } from "url";
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -56,7 +55,9 @@ const columns = () => [
   { field: "FNH", title: "FNH", editable: 'never' },
   { field: "MCML", title: "MCML", editable: 'never' },
   { field: "UBC Farm", title: "UBC Farm", editable: 'never' },
-  { field: "Greenhouse", title: "Greenhouse", editable: 'never' },
+  { field: "Totem Field", title: "Totem Field", editable: 'never' },
+  { field: "Horticulture Greenhouse", title: "Horticulture Greenhouse", editable: 'never' },
+  { field: "South Campus Greenhouse", title: "South Campus Greenhouse", editable: 'never' },
   { field: "Other Areas", title: "Other Areas", editable: 'never' },
   { field: "fnhFob", title: "FNH FOB Data" },
   { field: "mcmlFob", title: "MCML FOB Data" }
@@ -65,6 +66,46 @@ const columns = () => [
 export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek }) {
   const token = Cookies.get("access_token");
   const [data, setData] = useState([]);
+
+  const queryFobData = useCallback(async (date) => {
+    try {
+      const res = await Axios.post(
+        "http://localhost:8080/api/fob/query",
+        {
+          week: date
+        },
+        {
+          withCredentials: true,
+          headers: { Authorization: token },
+        }
+      );
+      if (res.status === 200) {
+        return res.data.fobData || {};
+      } else {
+        toast.error("Query for fob data failed", {
+          position: "bottom-center",
+          autoClose: false,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Query for fob data failed 1", {
+        position: "bottom-center",
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  }, [token]);
+
   useEffect(() => {
     queryFobData(date).then(({ data: fobData }) => {
       let tempArr = [];
@@ -93,47 +134,7 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
       }
       setData(tempArr);
     });
-  }, [date, checkInThisWeek, checkInLastWeek])
-
-  const queryFobData = (date) => {
-    return Axios.post(
-      "http://localhost:8080/api/fob/query",
-      {
-        week: date
-      },
-      {
-        withCredentials: true,
-        headers: { Authorization: token },
-      }
-    )
-      .then((res) => {
-        if (res.status === 200) {
-          return res.data.fobData || {};
-        } else {
-          toast.error("Query for fob data failed", {
-            position: "bottom-center",
-            autoClose: false,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Query for fob data failed 1", {
-          position: "bottom-center",
-          autoClose: false,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
-      });
-  }
+  }, [date, checkInThisWeek, checkInLastWeek, queryFobData])
 
   const updateFobData = ({week, newData}) => {
     Axios.post(

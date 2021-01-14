@@ -175,8 +175,8 @@ const buildCheckInByBuilding = (records) => {
       const fnh = curr.areas.some((area) => area.startsWith("FNH"));
       const farm = curr.areas.includes("UBC Farm");
       const totemField = curr.areas.includes("Totem Field");
-      const horticultureGreenhouse = curr.areas.includes("Horticulture Greenhouse");
-      const southCampusGreenhouse = curr.areas.includes("South Campus Greenhouse");
+      const horticultureGreenhouse = curr.areas.includes("Horticulture Greenhouse - near MCML");
+      const southCampusGreenhouse = curr.areas.includes("South Campus Greenhouse - near UBC farm");
       const other = curr.areas.some(
         (area) =>
           !area.startsWith("FNH") &&
