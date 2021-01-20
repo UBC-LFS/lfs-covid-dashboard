@@ -31,6 +31,8 @@ let numCheckInRecords = 0;
 let numCheckOutRecords = 0;
 
 mongoose.connect(process.env.MONGO_CONNECTION_ADDRESS, {
+  user: process.env.MONGO_ROOT_USERNAME,
+  pass: process.env.MONGO_ROOT_PASSWORD,
   useNewUrlParser: true 
 });
 

@@ -120,11 +120,12 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
           ({ fnhFob, mcmlFob } = JSON.parse(fobData[moment(day).format("MMM Do, YYYY")]));
           
         }
+        const dayLastWeek = moment(day).subtract(7,'days').format("YYYY-MM-DD")
         let temp = {
           date: moment(day).format("MMM Do, YYYY"),
           day: moment(day).format("dddd"),
           thisWeek: checkInThisWeek[day].count,
-          lastWeek: checkInLastWeek && checkInLastWeek[day] ? checkInLastWeek[day].count : null,
+          lastWeek: checkInLastWeek && checkInLastWeek[dayLastWeek] ? checkInLastWeek[dayLastWeek].count : null,
           wow,
           fnhFob,
           mcmlFob,

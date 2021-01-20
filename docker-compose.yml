@@ -24,13 +24,14 @@ services:
     image: mongo:latest
     container_name: mongodb
     restart: unless-stopped
-    env_file:
-      - ./backend/.env
     environment: 
       MONGO_INITDB_DATABASE: records
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     ports:
       - 27017:27017
     volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       - mongodb_data_container:/data/db
 volumes:
   mongodb_data_container:
