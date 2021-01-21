@@ -25,6 +25,7 @@ const checkInSurveyName = process.env.CHECKIN_SURVEY_NAME;
 const checkOutSurveyName = process.env.CHECKOUT_SURVEY_NAME;
 const downloadEveryMinutes = 10;
 
+const publicKey = fs.readFileSync("./public.key", "utf8");
 const privateKEY = fs.readFileSync("./private.key", "utf8");
 
 let numCheckInRecords = 0;
@@ -423,7 +424,7 @@ app.use(express.static(path.join(__dirname, 'build')));
 app.get(
   "/api/covid",
   expressJwt({
-    secret: privateKEY,
+    secret: publicKey,
     issuer: "UBC LFS",
     algorithms: ["RS256"],
   }),
@@ -442,7 +443,7 @@ app.get(
 app.post(
   "/api/fob/update",
   expressJwt({
-    secret: privateKEY,
+    secret: publicKey,
     issuer: "UBC LFS",
     algorithms: ["RS256"],
   }),
@@ -454,7 +455,7 @@ app.post(
 app.post(
   "/api/fob/query",
   expressJwt({
-    secret: privateKEY,
+    secret: publicKey,
     issuer: "UBC LFS",
     algorithms: ["RS256"],
   }),
