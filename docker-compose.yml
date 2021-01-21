@@ -26,13 +26,8 @@ services:
     restart: unless-stopped
     environment: 
       MONGO_INITDB_DATABASE: records
-<<<<<<< HEAD
-      MONGO_INITDB_ROOT_USERNAME: $MONGO_ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $MONGO_ROOT_PASSWORD
-=======
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
->>>>>>> 084a3b971d1a25abcd504fd4db625f9b526a3604
     ports:
       - 27017:27017
     volumes:
