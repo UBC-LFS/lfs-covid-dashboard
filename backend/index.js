@@ -417,6 +417,8 @@ app.use(
 // parse request body
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+// serve static front-end content
+app.use(express.static(path.join(__dirname, 'build')));
 
 app.get(
   "/api/covid",
@@ -537,12 +539,9 @@ app.post("/api/login", (req, response) => {
   );
 });
 
-// serve static front-end content
-app.use(express.static("build"));
-
 // send all requests to /
-app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+app.get('/*', function (req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 app.listen(PORT, () => {

@@ -78,7 +78,7 @@ export default function Login() {
   const handleSubmit = (event) => {
     event.preventDefault();
     Axios.post(
-      "http://localhost:8080/api/login",
+      "/api/login",
       {
         cwlId,
         password,

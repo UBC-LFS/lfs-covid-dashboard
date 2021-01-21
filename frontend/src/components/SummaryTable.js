@@ -70,7 +70,7 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
   const queryFobData = useCallback(async (date) => {
     try {
       const res = await Axios.post(
-        "http://localhost:8080/api/fob/query",
+        "/api/fob/query",
         {
           week: date
         },
@@ -139,7 +139,7 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
 
   const updateFobData = ({week, newData}) => {
     Axios.post(
-      "http://localhost:8080/api/fob/update",
+      "/api/fob/update",
       {
         week,
         newData
