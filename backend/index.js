@@ -37,6 +37,7 @@ mongoose.connect(process.env.MONGO_CONNECTION_ADDRESS, {
   user: process.env.MONGO_RECORDS_USERNAME,
   pass: process.env.MONGO_RECORDS_PASSWORD,
   useNewUrlParser: true,
+  useFindAndModify: false,
 });
 
 const connection = mongoose.connection;
@@ -349,16 +350,22 @@ const updateRecords = ({
             );
           }
 
-          const checkInRecord = new CheckInRecord({
-            _id,
-            firstName,
-            lastName,
-            date: recordedDate.toDate(),
-            areas,
-            comments,
-          });
           try {
-            await checkInRecord.save();
+            await CheckInRecord.findOneAndUpdate(
+              { _id },
+              {
+                _id,
+                firstName,
+                lastName,
+                date: recordedDate.toDate(),
+                areas,
+                comments,
+              },
+              {
+                upsert: true,
+                new: true,
+              }
+            );
           } catch (e) {
             console.log(e);
           }
@@ -400,16 +407,22 @@ const updateRecords = ({
             );
           }
 
-          const checkOutRecord = new CheckOutRecord({
-            _id,
-            firstName,
-            lastName,
-            date: recordedDate.toDate(),
-            areas,
-            comments,
-          });
           try {
-            await checkOutRecord.save();
+            await CheckOutRecord.findOneAndUpdate(
+              { _id },
+              {
+                _id,
+                firstName,
+                lastName,
+                date: recordedDate.toDate(),
+                areas,
+                comments,
+              },
+              {
+                upsert: true,
+                new: true,
+              }
+            );
           } catch (e) {
             console.log(e);
           }
