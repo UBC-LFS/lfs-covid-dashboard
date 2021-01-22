@@ -65,7 +65,6 @@ export default function App() {
     timeout: 1000 * 60 * 15,
     onIdle: checkTokenExpiry,
     onActive: checkTokenExpiry,
-    onAction: checkTokenExpiry,
     debounce: 1000
   })
 
