@@ -12,6 +12,9 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import MomentUtils from "@date-io/moment";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Cookies from "js-cookie";
+import { useIdleTimer } from "react-idle-timer";
+import jwt_decode from "jwt-decode";
+import moment from "moment-timezone";
 
 import Home from "./pages/Home";
 import Stats from "./pages/Stats";
@@ -52,8 +55,22 @@ export default function App() {
   const { setAuthenticated } = useAppState();
   const token = Cookies.get("access_token");
 
+  const checkTokenExpiry = () => {
+    if(!token || moment.unix(jwt_decode(token).exp).isBefore(moment(), 'second')){
+      setAuthenticated(false);
+    }
+  }
+
+  useIdleTimer({
+    timeout: 1000 * 60 * 15,
+    onIdle: checkTokenExpiry,
+    onActive: checkTokenExpiry,
+    onAction: checkTokenExpiry,
+    debounce: 1000
+  })
+
   useEffect(() => {
-    if (token) {
+    if (token && moment.unix(jwt_decode(token).exp).isAfter(moment(), 'second')) {
       Axios.get("/api/covid", {
         withCredentials: true,
         headers: { Authorization: token },
@@ -70,7 +87,8 @@ export default function App() {
           setIsLoading(false);
         })
         .catch((err) => {
-          console.log(err);
+          setAuthenticated(false);
+          setIsLoading(false);
         });
     } else {
       setAuthenticated(false);

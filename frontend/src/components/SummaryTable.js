@@ -107,7 +107,7 @@ export default function SummaryTable({
         }
       } catch (err) {
         console.log(err);
-        toast.error("Query for fob data failed 1", {
+        toast.error("Query for fob data failed", {
           position: "bottom-center",
           autoClose: false,
           hideProgressBar: true,
@@ -197,7 +197,7 @@ export default function SummaryTable({
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Fob data update failed 1", {
+        toast.error("Fob data update failed", {
           position: "bottom-center",
           autoClose: false,
           hideProgressBar: true,
