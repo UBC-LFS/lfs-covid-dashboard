@@ -587,16 +587,16 @@ app.post("/api/login", (req, response) => {
                 if (member.some((m) => m.includes(`uid=${req.body.cwlId}`))) {
                   const expiration = moment().add(1, "h");
                   const exp = expiration.unix();
-
+                  
                   const signingOptions = {
                     issuer: "UBC LFS",
-                    expiresIn: "1h",
                     algorithm: "RS256",
                   };
-
+                  
                   const token = jwt.sign(
                     {
                       uid: req.body.cwlId,
+                      exp,
                     },
                     privateKEY,
                     signingOptions
