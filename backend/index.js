@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const mongoose = require("mongoose");
 const axios = require("axios");
+const _ = require("lodash");
 const { CheckInRecord, CheckOutRecord, FobRecord } = require("./record.model");
 
 const {
@@ -51,12 +52,18 @@ require("dotenv").config();
  * @return {Promise} a promise that resolves to a student/employee number loan mapping object
  */
 const generateOutputJSON = async (callback, config) => {
-  const { responses: checkInResponses } = await fetchJSONResponseReport(
-    checkInSurveyName
-  );
-  const { responses: checkOutResponses } = await fetchJSONResponseReport(
-    checkOutSurveyName
-  );
+  let checkInResponses;
+  let checkOutResponses;
+  try {
+    ({ responses: checkInResponses } = await fetchJSONResponseReport(
+      checkInSurveyName
+    ));
+    ({ responses: checkOutResponses } = await fetchJSONResponseReport(
+      checkOutSurveyName
+    ));
+  } catch (e) {
+    console.log("Error Generate Survey Json Files", e);
+  }
 
   if (checkInResponses) {
     return callback({
@@ -70,8 +77,15 @@ const generateOutputJSON = async (callback, config) => {
 };
 
 const computeCvoidStats = async () => {
-  const checkInResponses = await CheckInRecord.find();
-  const checkOutResponses = await CheckOutRecord.find();
+  let checkInResponses = [];
+  let checkOutResponses = [];
+
+  try {
+    checkInResponses = await CheckInRecord.find();
+    checkOutResponses = await CheckOutRecord.find();
+  } catch (e) {
+    console.log("Compute Covid Stats Error", e);
+  }
 
   const checkInRecords = {};
   let numCheckInLast7Days = 0;
@@ -121,9 +135,13 @@ const computeCvoidStats = async () => {
     }
   });
 
-  const checkInRecordsToday =
-    checkInRecords[moment().year()][moment().month() + 1][moment().date()] ||
-    [];
+  const checkInRecordsThisYear = checkInRecords[moment().year()];
+  const checkInRecordsThisMonth = _.isEmpty(checkInRecordsThisYear)
+    ? {}
+    : checkInRecordsThisYear[moment().month() + 1];
+  const checkInRecordsToday = _.isEmpty(checkInRecordsThisMonth)
+    ? []
+    : checkInRecordsThisMonth[moment().date()];
 
   // calculate check-ins by time of day today
   sortRecordsByTime(checkInRecordsToday);
@@ -240,9 +258,13 @@ const computeCvoidStats = async () => {
       recordedDate.date()
     ].push(record);
   });
-  const checkOutRecordsToday =
-    checkOutRecords[moment().year()][moment().month() + 1][moment().date()] ||
-    [];
+  const checkOutRecordsThisYear = checkOutRecords[moment().year()];
+  const checkOutRecordsThisMonth = _.isEmpty(checkOutRecordsThisYear)
+    ? {}
+    : checkOutRecordsThisYear[moment().month() + 1];
+  const checkOutRecordsToday = _.isEmpty(checkOutRecordsThisMonth)
+    ? []
+    : checkOutRecordsThisMonth[moment().date()];
 
   // Get BC Covid-19 stats
   let bcCovidStats;
@@ -335,7 +357,11 @@ const updateRecords = ({
             areas,
             comments,
           });
-          await checkInRecord.save();
+          try {
+            await checkInRecord.save();
+          } catch (e) {
+            console.log(e);
+          }
         }
       }
     });
@@ -382,7 +408,11 @@ const updateRecords = ({
             areas,
             comments,
           });
-          await checkOutRecord.save();
+          try {
+            await checkOutRecord.save();
+          } catch (e) {
+            console.log(e);
+          }
         }
       }
     });
