@@ -62,10 +62,10 @@ export default function Stats({ stats }) {
     checkInByTime,
     checkInByDate,
     buildingMaxOccupy,
+    bcCovidStats
   } = stats;
 
   const [weather, setWeather] = useState({});
-  const [bcStats, setStats] = useState({});
 
   useEffect(() => {
     Axios.get(
@@ -87,17 +87,6 @@ export default function Stats({ stats }) {
         setWeather({
           name: "Unable to Load Weather Info",
         });
-      });
-    Axios.get(`https://api.covid19tracker.ca/summary/split`)
-      .then((res) => {
-        const {
-          data: { data },
-        } = res;
-        const temp = data.find((prov) => prov.province === "BC");
-        setStats(temp);
-      })
-      .catch((err) => {
-        console.log(err);
       });
   }, []);
   return (
@@ -140,14 +129,14 @@ export default function Stats({ stats }) {
               </Typography>
             </Grid>
             <Grid item xs={2} className={classes.borders}>
-              {Object.keys(bcStats).length ? (
+              {bcCovidStats && Object.keys(bcCovidStats).length ? (
                 <>
                   <Typography variant="h6">BC COVID-19 STATS</Typography>
                   <Typography variant="subtitle1" color="textSecondary">
-                    New Cases: {bcStats.change_cases}
+                    New Cases: {bcCovidStats.change_cases}
                   </Typography>
                   <Typography variant="subtitle1" color="textSecondary">
-                    Total Cases: {bcStats.total_cases}
+                    Total Cases: {bcCovidStats.total_cases}
                   </Typography>
                 </>
               ) : (

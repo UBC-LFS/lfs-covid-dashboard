@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const mongoose = require("mongoose");
 const { CheckInRecord, CheckOutRecord, FobRecord } = require("./record.model");
+const axios = require('axios');
 
 const {
   fetchJSONResponseReport,
@@ -232,6 +233,15 @@ const computeCvoidStats = async () => {
   const checkOutRecordsToday =
     checkOutRecords[moment().year()][moment().month() + 1][moment().date()] ||
     [];
+  
+  // Get BC Covid-19 stats
+  let bcCovidStats;
+  try {
+    const { data: { data } } = await axios.get(`https://api.covid19tracker.ca/summary/split`);
+    bcCovidStats = data.find((prov) => prov.province === "BC");
+  } catch (err) {
+    console.log(err);
+  }
 
   return {
     checkInRecords,
@@ -260,6 +270,7 @@ const computeCvoidStats = async () => {
         "Horticulture Greenhouse": null,
         "South Campus Greenhouse": null,
       },
+      bcCovidStats,
     },
     summary,
   };
