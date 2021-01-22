@@ -47,42 +47,67 @@ const tableIcons = {
 };
 
 const columns = () => [
-  { field: "date", title: "Date", editable: 'never' },
-  { field: "day", title: "Day of Week", editable: 'never' },
-  { field: "thisWeek", title: "Total", editable: 'never' },
-  { field: "lastWeek", title: "Total Prev Week", editable: 'never' },
-  { field: "wow", title: "Week-over-week", editable: 'never' },
-  { field: "FNH", title: "FNH", editable: 'never' },
-  { field: "MCML", title: "MCML", editable: 'never' },
-  { field: "UBC Farm", title: "UBC Farm", editable: 'never' },
-  { field: "Totem Field", title: "Totem Field", editable: 'never' },
-  { field: "Horticulture Greenhouse", title: "Horticulture Greenhouse", editable: 'never' },
-  { field: "South Campus Greenhouse", title: "South Campus Greenhouse", editable: 'never' },
-  { field: "Other Areas", title: "Other Areas", editable: 'never' },
+  { field: "date", title: "Date", editable: "never" },
+  { field: "day", title: "Day of Week", editable: "never" },
+  { field: "thisWeek", title: "Total", editable: "never" },
+  { field: "lastWeek", title: "Total Prev Week", editable: "never" },
+  { field: "wow", title: "Week-over-week", editable: "never" },
+  { field: "FNH", title: "FNH", editable: "never" },
+  { field: "MCML", title: "MCML", editable: "never" },
+  { field: "UBC Farm", title: "UBC Farm", editable: "never" },
+  { field: "Totem Field", title: "Totem Field", editable: "never" },
+  {
+    field: "Horticulture Greenhouse",
+    title: "Horticulture Greenhouse",
+    editable: "never",
+  },
+  {
+    field: "South Campus Greenhouse",
+    title: "South Campus Greenhouse",
+    editable: "never",
+  },
+  { field: "Other Areas", title: "Other Areas", editable: "never" },
   { field: "fnhFob", title: "FNH FOB Data" },
-  { field: "mcmlFob", title: "MCML FOB Data" }
+  { field: "mcmlFob", title: "MCML FOB Data" },
 ];
 
-export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek }) {
+export default function SummaryTable({
+  date,
+  checkInThisWeek,
+  checkInLastWeek,
+}) {
   const token = Cookies.get("access_token");
   const [data, setData] = useState([]);
 
-  const queryFobData = useCallback(async (date) => {
-    try {
-      const res = await Axios.post(
-        "/api/fob/query",
-        {
-          week: date
-        },
-        {
-          withCredentials: true,
-          headers: { Authorization: token },
+  const queryFobData = useCallback(
+    async (date) => {
+      try {
+        const res = await Axios.post(
+          "/api/fob/query",
+          {
+            week: date,
+          },
+          {
+            withCredentials: true,
+            headers: { Authorization: token },
+          }
+        );
+        if (res.status === 200) {
+          return res.data.fobData || {};
+        } else {
+          toast.error("Query for fob data failed", {
+            position: "bottom-center",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
         }
-      );
-      if (res.status === 200) {
-        return res.data.fobData || {};
-      } else {
-        toast.error("Query for fob data failed", {
+      } catch (err) {
+        console.log(err);
+        toast.error("Query for fob data failed 1", {
           position: "bottom-center",
           autoClose: false,
           hideProgressBar: true,
@@ -92,57 +117,55 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
           progress: undefined,
         });
       }
-    } catch (err) {
-      console.log(err);
-      toast.error("Query for fob data failed 1", {
-        position: "bottom-center",
-        autoClose: false,
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    }
-  }, [token]);
+    },
+    [token]
+  );
 
   useEffect(() => {
     queryFobData(date).then(({ data: fobData }) => {
       let tempArr = [];
       for (let day in checkInThisWeek) {
-        let wow = checkInLastWeek && checkInLastWeek[day] ?
-          (checkInThisWeek[day].count - checkInLastWeek[day].count) /
-          checkInLastWeek[day].count : 0;
+        let wow =
+          checkInLastWeek && checkInLastWeek[day]
+            ? (checkInThisWeek[day].count - checkInLastWeek[day].count) /
+              checkInLastWeek[day].count
+            : 0;
         wow = Math.round(wow * 100) + "%";
         let fnhFob = 0;
         let mcmlFob = 0;
-        if(fobData && fobData[moment(day).format("MMM Do, YYYY")]){
-          ({ fnhFob, mcmlFob } = JSON.parse(fobData[moment(day).format("MMM Do, YYYY")]));
-          
+        if (fobData && fobData[moment(day).format("MMM Do, YYYY")]) {
+          ({ fnhFob, mcmlFob } = JSON.parse(
+            fobData[moment(day).format("MMM Do, YYYY")]
+          ));
         }
-        const dayLastWeek = moment(day).subtract(7,'days').format("YYYY-MM-DD")
+        const dayLastWeek = moment(day)
+          .subtract(7, "days")
+          .format("YYYY-MM-DD");
         let temp = {
           date: moment(day).format("MMM Do, YYYY"),
           day: moment(day).format("dddd"),
           thisWeek: checkInThisWeek[day].count,
-          lastWeek: checkInLastWeek && checkInLastWeek[dayLastWeek] ? checkInLastWeek[dayLastWeek].count : null,
+          lastWeek:
+            checkInLastWeek && checkInLastWeek[dayLastWeek]
+              ? checkInLastWeek[dayLastWeek].count
+              : null,
           wow,
           fnhFob,
           mcmlFob,
           ...checkInThisWeek[day].byBuilding,
-        }
+        };
         tempArr.push(temp);
       }
       setData(tempArr);
     });
-  }, [date, checkInThisWeek, checkInLastWeek, queryFobData])
+  }, [date, checkInThisWeek, checkInLastWeek, queryFobData]);
 
-  const updateFobData = ({week, newData}) => {
+  const updateFobData = ({ week, newData }) => {
     Axios.post(
       "/api/fob/update",
       {
         week,
-        newData
+        newData,
       },
       {
         withCredentials: true,
@@ -184,19 +207,19 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
           progress: undefined,
         });
       });
-  }
+  };
 
   return (
     <>
-      <FobDataChart data={data}/>
+      <FobDataChart data={data} />
       <Grid item xs={12}>
         <div style={{ width: "100%" }}>
           {checkInThisWeek ? (
             <MaterialTable
               localization={{
-                header : {
-                  actions: ''
-                }
+                header: {
+                  actions: "",
+                },
               }}
               columns={columns()}
               data={data}
@@ -223,41 +246,56 @@ export default function SummaryTable({ date, checkInThisWeek, checkInLastWeek })
               //   },
               // }}
               editable={{
-                isDeleteHidden: rowData => true,
-                onBulkUpdate: changes => 
+                isDeleteHidden: (rowData) => true,
+                onBulkUpdate: (changes) =>
                   new Promise((resolve, reject) => {
-                      let changeArr = [];
-                      for(const change in changes){
-                        const { newData: { date, fnhFob, mcmlFob } } = changes[change];
-                        changeArr.push([date, JSON.stringify({
+                    let changeArr = [];
+                    for (const change in changes) {
+                      const {
+                        newData: { date, fnhFob, mcmlFob },
+                      } = changes[change];
+                      changeArr.push([
+                        date,
+                        JSON.stringify({
                           fnhFob: parseInt(fnhFob),
-                          mcmlFob: parseInt(mcmlFob)
-                        })]);
-                      }
-                      const fobMap = new Map(changeArr);
-                      data.forEach(day => {
-                        if(!fobMap.has(day.date)){
-                          fobMap.set(day.date, JSON.stringify({
+                          mcmlFob: parseInt(mcmlFob),
+                        }),
+                      ]);
+                    }
+                    const fobMap = new Map(changeArr);
+                    data.forEach((day) => {
+                      if (!fobMap.has(day.date)) {
+                        fobMap.set(
+                          day.date,
+                          JSON.stringify({
                             fnhFob: day.fnhFob,
-                            mcmlFob: day.mcmlFob
-                          }))
-                        }
-                      })
-                      updateFobData({week: date, newData: JSON.stringify([...fobMap])});
-                      setData(prevData => prevData.map(day => {
-                        const { fnhFob, mcmlFob } = JSON.parse(fobMap.get(day.date));
+                            mcmlFob: day.mcmlFob,
+                          })
+                        );
+                      }
+                    });
+                    updateFobData({
+                      week: date,
+                      newData: JSON.stringify([...fobMap]),
+                    });
+                    setData((prevData) =>
+                      prevData.map((day) => {
+                        const { fnhFob, mcmlFob } = JSON.parse(
+                          fobMap.get(day.date)
+                        );
                         return {
                           ...day,
                           fnhFob,
-                          mcmlFob
-                        }
-                      }))
-                      resolve();
-                }),
-                onRowDelete: oldData =>
+                          mcmlFob,
+                        };
+                      })
+                    );
+                    resolve();
+                  }),
+                onRowDelete: (oldData) =>
                   new Promise((resolve, reject) => {
                     resolve();
-                  })
+                  }),
               }}
             />
           ) : null}

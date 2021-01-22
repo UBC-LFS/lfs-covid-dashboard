@@ -8,8 +8,8 @@ const ldap = require("ldapjs");
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const mongoose = require("mongoose");
+const axios = require("axios");
 const { CheckInRecord, CheckOutRecord, FobRecord } = require("./record.model");
-const axios = require('axios');
 
 const {
   fetchJSONResponseReport,
@@ -33,15 +33,15 @@ let numCheckInRecords = 0;
 let numCheckOutRecords = 0;
 
 mongoose.connect(process.env.MONGO_CONNECTION_ADDRESS, {
-  user: process.env.MONGO_ROOT_USERNAME,
-  pass: process.env.MONGO_ROOT_PASSWORD,
-  useNewUrlParser: true 
+  user: process.env.MONGO_RECORDS_USERNAME,
+  pass: process.env.MONGO_RECORDS_PASSWORD,
+  useNewUrlParser: true,
 });
 
 const connection = mongoose.connection;
-connection.once('open', function() {
-    console.log("MongoDB database connection established successfully");
-})
+connection.once("open", function () {
+  console.log("MongoDB database connection established successfully");
+});
 
 // configure .env file
 require("dotenv").config();
@@ -51,14 +51,18 @@ require("dotenv").config();
  * @return {Promise} a promise that resolves to a student/employee number loan mapping object
  */
 const generateOutputJSON = async (callback, config) => {
-  const { responses: checkInResponses} = await fetchJSONResponseReport(checkInSurveyName);
-  const { responses: checkOutResponses} = await fetchJSONResponseReport(checkOutSurveyName);
+  const { responses: checkInResponses } = await fetchJSONResponseReport(
+    checkInSurveyName
+  );
+  const { responses: checkOutResponses } = await fetchJSONResponseReport(
+    checkOutSurveyName
+  );
 
   if (checkInResponses) {
     return callback({
       checkInResponses,
       checkOutResponses,
-      ...config
+      ...config,
     });
   }
 
@@ -73,48 +77,48 @@ const computeCvoidStats = async () => {
   let numCheckInLast7Days = 0;
   let numCheckInLast31Days = 0;
   checkInResponses.forEach((response) => {
-      const { areas, date, firstName, lastName, comments } = response;
-      const recordedDate = moment(date);
+    const { areas, date, firstName, lastName, comments } = response;
+    const recordedDate = moment(date);
 
-      if (!checkInRecords[recordedDate.year()]) {
-        checkInRecords[recordedDate.year()] = {};
-      }
+    if (!checkInRecords[recordedDate.year()]) {
+      checkInRecords[recordedDate.year()] = {};
+    }
 
-      if (!checkInRecords[recordedDate.year()][recordedDate.month() + 1]) {
-        checkInRecords[recordedDate.year()][recordedDate.month() + 1] = {};
-      }
+    if (!checkInRecords[recordedDate.year()][recordedDate.month() + 1]) {
+      checkInRecords[recordedDate.year()][recordedDate.month() + 1] = {};
+    }
 
-      if (
-        !checkInRecords[recordedDate.year()][recordedDate.month() + 1][
-          recordedDate.date()
-        ]
-      ) {
-        checkInRecords[recordedDate.year()][recordedDate.month() + 1][
-          recordedDate.date()
-        ] = [];
-      }
-
-      const record = {
-        firstName,
-        lastName,
-        time: recordedDate.format("YYYY-MM-DDTHH:mm"),
-        areas,
-        comments,
-      };
-
+    if (
+      !checkInRecords[recordedDate.year()][recordedDate.month() + 1][
+        recordedDate.date()
+      ]
+    ) {
       checkInRecords[recordedDate.year()][recordedDate.month() + 1][
         recordedDate.date()
-      ].push(record);
+      ] = [];
+    }
 
-      //Add to total responses in past 7 and 31 days
-      //if the response is recorded in the last 31 days
-      if (recordedDate.isAfter(moment().subtract(31, "days"), "day")) {
-        numCheckInLast31Days++;
-        //if the response is recorded in the past 7 days
-        if (recordedDate.isAfter(moment().subtract(7, "days"), "day")) {
-          numCheckInLast7Days++;
-        }
+    const record = {
+      firstName,
+      lastName,
+      time: recordedDate.format("YYYY-MM-DDTHH:mm"),
+      areas,
+      comments,
+    };
+
+    checkInRecords[recordedDate.year()][recordedDate.month() + 1][
+      recordedDate.date()
+    ].push(record);
+
+    //Add to total responses in past 7 and 31 days
+    //if the response is recorded in the last 31 days
+    if (recordedDate.isAfter(moment().subtract(31, "days"), "day")) {
+      numCheckInLast31Days++;
+      //if the response is recorded in the past 7 days
+      if (recordedDate.isAfter(moment().subtract(7, "days"), "day")) {
+        numCheckInLast7Days++;
       }
+    }
   });
 
   const checkInRecordsToday =
@@ -179,16 +183,22 @@ const computeCvoidStats = async () => {
           count,
         });
 
-        if (!summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")]) {
-          summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")] = {};
+        if (
+          !summary[
+            moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")
+          ]
+        ) {
+          summary[
+            moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")
+          ] = {};
         }
 
-        summary[moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")][moment(time, "YYYY-MM-DD").format("YYYY-MM-DD")] = {
+        summary[
+          moment(time, "YYYY-MM-DD").startOf("week").format("YYYY-MM-DD")
+        ][moment(time, "YYYY-MM-DD").format("YYYY-MM-DD")] = {
           count,
-          byBuilding: buildCheckInByBuilding(
-            checkInRecords[year][month][date]
-          ),
-        }
+          byBuilding: buildCheckInByBuilding(checkInRecords[year][month][date]),
+        };
       }
     }
   }
@@ -233,11 +243,13 @@ const computeCvoidStats = async () => {
   const checkOutRecordsToday =
     checkOutRecords[moment().year()][moment().month() + 1][moment().date()] ||
     [];
-  
+
   // Get BC Covid-19 stats
   let bcCovidStats;
   try {
-    const { data: { data } } = await axios.get(`https://api.covid19tracker.ca/summary/split`);
+    const {
+      data: { data },
+    } = await axios.get(`https://api.covid19tracker.ca/summary/split`);
     bcCovidStats = data.find((prov) => prov.province === "BC");
   } catch (err) {
     console.log(err);
@@ -276,14 +288,22 @@ const computeCvoidStats = async () => {
   };
 };
 
-const updateRecords = ({ checkInResponses, checkOutResponses, time = moment(), period = "day" }) => {  
-  if(checkInResponses.length > numCheckInRecords){
+const updateRecords = ({
+  checkInResponses,
+  checkOutResponses,
+  time = moment(),
+  period = "day",
+}) => {
+  if (checkInResponses.length > numCheckInRecords) {
     numCheckInRecords = checkInResponses.length;
     checkInResponses.forEach(async (response) => {
       if (response && response.values && response.values.finished) {
-        const { recordedDate: rawRecordedDate, _recordId: _id } = response.values;
+        const {
+          recordedDate: rawRecordedDate,
+          _recordId: _id,
+        } = response.values;
         const recordedDate = moment(rawRecordedDate);
-        
+
         if (recordedDate.isSameOrAfter(time, period)) {
           const {
             QID10: buildings,
@@ -296,7 +316,7 @@ const updateRecords = ({ checkInResponses, checkOutResponses, time = moment(), p
             QID10_TEXT: otherAreas,
             QID15_TEXT: comments,
           } = response.values;
-  
+
           let areas = [];
           if (buildings) {
             areas = getAreaOfActivity(
@@ -306,7 +326,7 @@ const updateRecords = ({ checkInResponses, checkOutResponses, time = moment(), p
               otherAreas
             );
           }
-  
+
           const checkInRecord = new CheckInRecord({
             _id,
             firstName,
@@ -321,11 +341,14 @@ const updateRecords = ({ checkInResponses, checkOutResponses, time = moment(), p
     });
   }
 
-  if(checkOutResponses.length > numCheckOutRecords){
+  if (checkOutResponses.length > numCheckOutRecords) {
     numCheckOutRecords = checkOutResponses.length;
     checkOutResponses.forEach(async (response) => {
       if (response && response.values && response.values.finished) {
-        const { recordedDate: rawRecordedDate, _recordId: _id } = response.values;
+        const {
+          recordedDate: rawRecordedDate,
+          _recordId: _id,
+        } = response.values;
         const recordedDate = moment(rawRecordedDate);
 
         if (recordedDate.isSameOrAfter(time, period)) {
@@ -372,41 +395,48 @@ const getFobData = async (week) => {
     const fobData = await FobRecord.findOne({ week });
     return {
       status: 200,
-      fobData
-    }
+      fobData,
+    };
   } catch (err) {
     return {
       status: 500,
-      error: err
+      error: err,
     };
   }
-}
+};
 
 const updateFobData = async ({ week, newData }) => {
   try {
-    await FobRecord.findOneAndUpdate({ week }, {
-      week,
-      data: new Map(JSON.parse(newData))
-    }, {
-      upsert: true,
-      new: true,
-    });
+    await FobRecord.findOneAndUpdate(
+      { week },
+      {
+        week,
+        data: new Map(JSON.parse(newData)),
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
     return {
-      status: 200
-    }
+      status: 200,
+    };
   } catch (err) {
     console.log(err);
     return {
       status: 500,
-      error: err
+      error: err,
     };
   }
-}
+};
 
 generateOutputJSON(updateRecords, { time: "2021-01-10" });
 
-setInterval(function(){
-  generateOutputJSON(updateRecords, { time: moment().subtract(10, 'minutes'), period: "minute"});
+setInterval(function () {
+  generateOutputJSON(updateRecords, {
+    time: moment().subtract(10, "minutes"),
+    period: "minute",
+  });
 }, downloadEveryMinutes * 60000);
 
 const app = express();
@@ -430,7 +460,7 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 // serve static front-end content
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, "build")));
 
 app.get(
   "/api/covid",
@@ -459,7 +489,9 @@ app.post(
     algorithms: ["RS256"],
   }),
   (req, res) => {
-    updateFobData(req.body).then(result => res.status(result.status).send(result));
+    updateFobData(req.body).then((result) =>
+      res.status(result.status).send(result)
+    );
   }
 );
 
@@ -471,7 +503,9 @@ app.post(
     algorithms: ["RS256"],
   }),
   (req, res) => {
-    getFobData(req.body.week).then(result => res.status(result.status).send(result));
+    getFobData(req.body.week).then((result) =>
+      res.status(result.status).send(result)
+    );
   }
 );
 
@@ -552,8 +586,8 @@ app.post("/api/login", (req, response) => {
 });
 
 // send all requests to /
-app.get('/*', function (req, res) {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+app.get("/*", function (req, res) {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
 app.listen(PORT, () => {

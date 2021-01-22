@@ -1,18 +1,17 @@
 import React from "react";
 import { HorizontalBar } from "react-chartjs-2";
 import { Grid } from "@material-ui/core";
-import "chartjs-plugin-annotation"
-
+import "chartjs-plugin-annotation";
 
 export default function FobDataChart({ data }) {
-  const labels = data.map(day => day.date);
-  const fnhCheckIn = data.map(day => day.FNH)
-  const fnhFobIn = data.map(day => day.fnhFob)
-  const mcmlCheckIn = data.map(day => day.MCML)
-  const mcmlFobIn = data.map(day => day.mcmlFob)
+  const labels = data.map((day) => day.date);
+  const fnhCheckIn = data.map((day) => day.FNH);
+  const fnhFobIn = data.map((day) => day.fnhFob);
+  const mcmlCheckIn = data.map((day) => day.MCML);
+  const mcmlFobIn = data.map((day) => day.mcmlFob);
 
-  const fnhDataArr = [fnhCheckIn, fnhFobIn]; 
-  const mcmlDataArr = [mcmlCheckIn, mcmlFobIn]; 
+  const fnhDataArr = [fnhCheckIn, fnhFobIn];
+  const mcmlDataArr = [mcmlCheckIn, mcmlFobIn];
 
   const baseData = [
     {
@@ -31,24 +30,24 @@ export default function FobDataChart({ data }) {
       hoverBackgroundColor: "rgba(255,99,132,0.4)",
       hoverBorderColor: "rgba(255,99,132,1)",
     },
-  ]
+  ];
   const fnhChartData = {
     labels,
     datasets: baseData.map((val, idx) => {
       return {
         ...val,
-        data: fnhDataArr[idx]
-      }
-    })
+        data: fnhDataArr[idx],
+      };
+    }),
   };
   const mcmlChartData = {
     labels,
     datasets: baseData.map((val, idx) => {
       return {
         ...val,
-        data: mcmlDataArr[idx]
-      }
-    })
+        data: mcmlDataArr[idx],
+      };
+    }),
   };
 
   return (
@@ -59,8 +58,8 @@ export default function FobDataChart({ data }) {
           options={{
             title: {
               display: true,
-              text: 'FNH',
-              fontSize: 18
+              text: "FNH",
+              fontSize: 18,
             },
             maintainAspectRatio: false,
             annotation: {
@@ -74,11 +73,11 @@ export default function FobDataChart({ data }) {
                   label: {
                     content: "Max Occupant: 109",
                     enabled: true,
-                    position: "top"
-                  }
-                }
-              ]
-            }
+                    position: "top",
+                  },
+                },
+              ],
+            },
           }}
         />
       </Grid>
@@ -89,8 +88,8 @@ export default function FobDataChart({ data }) {
           options={{
             title: {
               display: true,
-              text: 'MCML',
-              fontSize: 18
+              text: "MCML",
+              fontSize: 18,
             },
             scales: {
               xAxes: [
@@ -114,10 +113,10 @@ export default function FobDataChart({ data }) {
                   label: {
                     content: "Max Occupant: 116",
                     enabled: true,
-                    position: "top"
-                  }
-                }
-              ]
+                    position: "top",
+                  },
+                },
+              ],
             },
           }}
         />

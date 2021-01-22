@@ -158,9 +158,17 @@ const getAreaOfActivity = (buildings, fnhLevels, mcmlLevels, otherAreas) => {
 
 const sortRecordsByTime = (records) => {
   records.sort((a, b) => {
-    if (moment(a.time, "YYYY-MM-DDTHH:mm").isBefore(moment(b.time, "YYYY-MM-DD HH:mm"))) {
+    if (
+      moment(a.time, "YYYY-MM-DDTHH:mm").isBefore(
+        moment(b.time, "YYYY-MM-DD HH:mm")
+      )
+    ) {
       return -1;
-    } else if (moment(a.time, "YYYY-MM-DD HH:mm").isAfter(moment(b.time, "YYYY-MM-DD HH:mm"))) {
+    } else if (
+      moment(a.time, "YYYY-MM-DD HH:mm").isAfter(
+        moment(b.time, "YYYY-MM-DD HH:mm")
+      )
+    ) {
       return 1;
     } else {
       return 0;
@@ -175,8 +183,12 @@ const buildCheckInByBuilding = (records) => {
       const fnh = curr.areas.some((area) => area.startsWith("FNH"));
       const farm = curr.areas.includes("UBC Farm");
       const totemField = curr.areas.includes("Totem Field");
-      const horticultureGreenhouse = curr.areas.includes("Horticulture Greenhouse - near MCML");
-      const southCampusGreenhouse = curr.areas.includes("South Campus Greenhouse - near UBC farm");
+      const horticultureGreenhouse = curr.areas.includes(
+        "Horticulture Greenhouse - near MCML"
+      );
+      const southCampusGreenhouse = curr.areas.includes(
+        "South Campus Greenhouse - near UBC farm"
+      );
       const other = curr.areas.some(
         (area) =>
           !area.startsWith("FNH") &&

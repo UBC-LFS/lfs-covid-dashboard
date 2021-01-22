@@ -90,7 +90,7 @@ export default function Home({ checkInRecords, checkOutRecords }) {
               format="DD/MM/yyyy"
               views={["year", "month", "date"]}
               onChange={handleDateChange}
-              minDate={ moment("2021-01-10").toDate()}
+              minDate={moment("2021-01-10").toDate()}
             />
           </Box>
         </Box>

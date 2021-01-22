@@ -62,7 +62,7 @@ export default function Stats({ stats }) {
     checkInByTime,
     checkInByDate,
     buildingMaxOccupy,
-    bcCovidStats
+    bcCovidStats,
   } = stats;
 
   const [weather, setWeather] = useState({});

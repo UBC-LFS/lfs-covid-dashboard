@@ -44,37 +44,51 @@ export default function Summary({ summary }) {
   const [wowAvgCheckIn, setWowAvgCheckIn] = useState(null);
 
   useEffect(() => {
-    const selectedWeek = moment(selectedDate).startOf("week").format("YYYY-MM-DD");
-    const lastWeek = moment(selectedWeek).subtract(7, 'days').format("YYYY-MM-DD");
+    const selectedWeek = moment(selectedDate)
+      .startOf("week")
+      .format("YYYY-MM-DD");
+    const lastWeek = moment(selectedWeek)
+      .subtract(7, "days")
+      .format("YYYY-MM-DD");
     setCheckInThisWeek(summary[selectedWeek]);
     setCheckInLastWeek(summary[lastWeek]);
 
     let totCheckInThisWeek = 0;
     let totCheckInLastWeek = 0;
     if (Object.keys(summary).length) {
-      if(summary[selectedWeek]){
-        for(const day in summary[selectedWeek]){
+      if (summary[selectedWeek]) {
+        for (const day in summary[selectedWeek]) {
           totCheckInThisWeek += summary[selectedWeek][day].count;
         }
       }
-      if(summary[lastWeek]){
-        for(const day in summary[lastWeek]){
+      if (summary[lastWeek]) {
+        for (const day in summary[lastWeek]) {
           totCheckInLastWeek += summary[lastWeek][day].count;
         }
       }
       setTotalCheckInThisWeek(totCheckInThisWeek);
-      const avgThisWeek = summary[selectedWeek] ? Math.round(
-        totCheckInThisWeek / Object.keys(summary[selectedWeek]).length
-      ) : 0;
+      const avgThisWeek = summary[selectedWeek]
+        ? Math.round(
+            totCheckInThisWeek / Object.keys(summary[selectedWeek]).length
+          )
+        : 0;
       setAverageThisWeek(avgThisWeek);
-  
-      const averageLastWeek = summary[lastWeek] ?
-        totCheckInLastWeek / Object.keys(summary[lastWeek]).length : 0;
-      setWowTotalCheckIn(totCheckInLastWeek ? (totCheckInThisWeek - totCheckInLastWeek) / totCheckInLastWeek : null);
-      setWowAvgCheckIn(averageLastWeek ? (avgThisWeek - averageLastWeek) / averageLastWeek : null);
+
+      const averageLastWeek = summary[lastWeek]
+        ? totCheckInLastWeek / Object.keys(summary[lastWeek]).length
+        : 0;
+      setWowTotalCheckIn(
+        totCheckInLastWeek
+          ? (totCheckInThisWeek - totCheckInLastWeek) / totCheckInLastWeek
+          : null
+      );
+      setWowAvgCheckIn(
+        averageLastWeek
+          ? (avgThisWeek - averageLastWeek) / averageLastWeek
+          : null
+      );
     }
   }, [selectedDate, summary]);
-
 
   return (
     <div className={classes.root}>
@@ -125,9 +139,7 @@ export default function Summary({ summary }) {
                 >
                   {wowTotalCheckIn == null
                     ? ""
-                    : `${Math.round(
-                        wowTotalCheckIn * 100
-                      )}% from prior week`}
+                    : `${Math.round(wowTotalCheckIn * 100)}% from prior week`}
                 </Typography>
               </Box>
             </Grid>
@@ -171,7 +183,7 @@ export default function Summary({ summary }) {
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <Box display="flex" justifyContent='flex-end'>
+            <Box display="flex" justifyContent="flex-end">
               <DatePicker
                 label="Week picker"
                 inputVariant="outlined"
