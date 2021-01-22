@@ -140,7 +140,7 @@ const computeCvoidStats = async () => {
   const checkInRecordsThisMonth = _.isEmpty(checkInRecordsThisYear)
     ? {}
     : checkInRecordsThisYear[moment().month() + 1];
-  const checkInRecordsToday = _.isEmpty(checkInRecordsThisMonth)
+  const checkInRecordsToday = _.isEmpty(checkInRecordsThisMonth) || !checkInRecordsThisMonth[moment().date()]
     ? []
     : checkInRecordsThisMonth[moment().date()];
 
@@ -263,11 +263,11 @@ const computeCvoidStats = async () => {
   const checkOutRecordsThisMonth = _.isEmpty(checkOutRecordsThisYear)
     ? {}
     : checkOutRecordsThisYear[moment().month() + 1];
-  const checkOutRecordsToday = _.isEmpty(checkOutRecordsThisMonth)
+  const checkOutRecordsToday = _.isEmpty(checkOutRecordsThisMonth) || !checkOutRecordsThisMonth[moment().date()]
     ? []
     : checkOutRecordsThisMonth[moment().date()];
 
-  // Get BC Covid-19 stats
+    // Get BC Covid-19 stats
   let bcCovidStats;
   try {
     const {
