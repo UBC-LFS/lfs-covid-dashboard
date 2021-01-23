@@ -58,6 +58,7 @@ export default function App() {
   const checkTokenExpiry = () => {
     if(!token || moment.unix(jwt_decode(token).exp).isBefore(moment(), 'second')){
       setAuthenticated(false);
+      Cookies.remove("access_token")
     }
   }
 
@@ -88,10 +89,12 @@ export default function App() {
         .catch((err) => {
           setAuthenticated(false);
           setIsLoading(false);
+          Cookies.remove("access_token")
         });
     } else {
       setAuthenticated(false);
       setIsLoading(false);
+      Cookies.remove("access_token")
     }
   }, [token, setAuthenticated]);
 

@@ -10,6 +10,7 @@ import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
 import SchoolIcon from "@material-ui/icons/School";
 import Typography from "@material-ui/core/Typography";
+import Cookies from "js-cookie";
 import { makeStyles } from "@material-ui/core/styles";
 import { useHistory } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -114,6 +115,7 @@ export default function Login() {
     setCwlId("");
     setPassword("");
     setAuthenticated(false);
+    Cookies.remove("access_token")
     toast.error("Login failed. Please try again with valid credentials", {
       position: "bottom-center",
       autoClose: false,
