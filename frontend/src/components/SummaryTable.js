@@ -125,10 +125,13 @@ export default function SummaryTable({
     queryFobData(date).then(({ data: fobData }) => {
       let tempArr = [];
       for (let day in checkInThisWeek) {
+        const dayLastWeek = moment(day)
+          .subtract(7, "days")
+          .format("YYYY-MM-DD");
         let wow =
-          checkInLastWeek && checkInLastWeek[day]
-            ? (checkInThisWeek[day].count - checkInLastWeek[day].count) /
-              checkInLastWeek[day].count
+          checkInLastWeek && checkInLastWeek[dayLastWeek]
+            ? (checkInThisWeek[day].count - checkInLastWeek[dayLastWeek].count) /
+              checkInLastWeek[dayLastWeek].count
             : 0;
         wow = Math.round(wow * 100) + "%";
         let fnhFob = 0;
@@ -138,9 +141,6 @@ export default function SummaryTable({
             fobData[moment(day).format("MMM Do, YYYY")]
           ));
         }
-        const dayLastWeek = moment(day)
-          .subtract(7, "days")
-          .format("YYYY-MM-DD");
         let temp = {
           date: moment(day).format("MMM Do, YYYY"),
           day: moment(day).format("dddd"),
