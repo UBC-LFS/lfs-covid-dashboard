@@ -17,10 +17,11 @@ import Remove from "@material-ui/icons/Remove";
 import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
-import FobDataChart from "./FobDataChart";
 import { Grid } from "@material-ui/core";
 import { ToastContainer, toast } from "react-toastify";
 import Cookies from "js-cookie";
+import FobDataChart from "./FobDataChart";
+import { useAppState } from "../appState";
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -77,6 +78,7 @@ export default function SummaryTable({
   checkInLastWeek,
 }) {
   const token = Cookies.get("access_token");
+  const { setAuthenticated } = useAppState();
   const [data, setData] = useState([]);
 
   const queryFobData = useCallback(
@@ -95,7 +97,7 @@ export default function SummaryTable({
         if (res.status === 200) {
           return res.data.fobData || {};
         } else {
-          toast.error("Query for fob data failed", {
+          toast.error("Fob data query failed. Please try reloading the page.", {
             position: "bottom-center",
             autoClose: false,
             hideProgressBar: true,
@@ -103,22 +105,28 @@ export default function SummaryTable({
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
+            toastId: "fobdata-query-failed",
           });
         }
       } catch (err) {
         console.log(err);
-        toast.error("Query for fob data failed", {
+        toast.error("Fob data query failed because your session has expired. Please log in to try again.", {
           position: "bottom-center",
-          autoClose: false,
-          hideProgressBar: true,
+          autoClose: 7000,
+          hideProgressBar: false,
           closeOnClick: true,
-          pauseOnHover: true,
+          pauseOnHover: false,
           draggable: true,
           progress: undefined,
+          toastId: "fobdata-query-failed",
+          onClose: () => {
+            Cookies.remove("access_token");
+            setAuthenticated(false);
+          }
         });
       }
     },
-    [token]
+    [token, setAuthenticated]
   );
 
   useEffect(() => {
@@ -182,9 +190,10 @@ export default function SummaryTable({
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
+            toastId: "fobdata-updated",
           });
         } else {
-          toast.error("Fob data update failed", {
+          toast.error("Fob data update failed. Please try again", {
             position: "bottom-center",
             autoClose: false,
             hideProgressBar: true,
@@ -192,19 +201,25 @@ export default function SummaryTable({
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
+            toastId: "fobdata-update-failed",
           });
         }
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Fob data update failed", {
+        toast.error("Fob data update failed because your session has expired. Please log in to try again.", {
           position: "bottom-center",
-          autoClose: false,
-          hideProgressBar: true,
+          autoClose: 7000,
+          hideProgressBar: false,
           closeOnClick: true,
-          pauseOnHover: true,
+          pauseOnHover: false,
           draggable: true,
           progress: undefined,
+          toastId: "fobdata-update-failed",
+          onClose: () => {
+            Cookies.remove("access_token");
+            setAuthenticated(false);
+          }
         });
       });
   };
@@ -230,21 +245,6 @@ export default function SummaryTable({
                 showTitle: false,
               }}
               icons={tableIcons}
-              // cellEditable={{
-              //   cellStyle: {},
-              //   onCellEditApproved: (newValue, oldValue, rowData, columnDef) => {
-              //       return new Promise((resolve, reject) => {
-              //           setData(prevData => prevData.map(day => {
-              //             return day.date === rowData.date ? {
-              //               ...rowData,
-              //               [columnDef.field]: newValue,
-              //             } : day
-              //           }))
-              //           console.log(newValue, oldValue, rowData, columnDef)
-              //           resolve();
-              //       });
-              //   },
-              // }}
               editable={{
                 isDeleteHidden: (rowData) => true,
                 onBulkUpdate: (changes) =>

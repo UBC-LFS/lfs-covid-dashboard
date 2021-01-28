@@ -15,6 +15,7 @@ import Cookies from "js-cookie";
 import { useIdleTimer } from "react-idle-timer";
 import jwt_decode from "jwt-decode";
 import moment from "moment-timezone";
+import { toast } from 'react-toastify';
 
 import Home from "./pages/Home";
 import Stats from "./pages/Stats";
@@ -58,7 +59,17 @@ export default function App() {
   const checkTokenExpiry = () => {
     if(!token || moment.unix(jwt_decode(token).exp).isBefore(moment(), 'second')){
       setAuthenticated(false);
-      Cookies.remove("access_token")
+      Cookies.remove("access_token");
+      toast.warn("Session expired. Please log in again.", {
+        position: "bottom-center",
+        autoClose: false,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        toastId: "session-expired"
+      });
     }
   }
 

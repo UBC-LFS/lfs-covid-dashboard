@@ -100,6 +100,7 @@ export default function Login() {
             pauseOnHover: true,
             draggable: true,
             progress: undefined,
+            toastId: "login-success",
           });
         } else {
           loginFailed();
