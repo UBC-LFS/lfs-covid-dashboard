@@ -22,6 +22,7 @@ import { ToastContainer, toast } from "react-toastify";
 import Cookies from "js-cookie";
 import FobDataChart from "./FobDataChart";
 import { useAppState } from "../appState";
+import UploadDialog from "./UploadDialog";
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -80,6 +81,7 @@ export default function SummaryTable({
   const token = Cookies.get("access_token");
   const { setAuthenticated } = useAppState();
   const [data, setData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const queryFobData = useCallback(
     async (date) => {
@@ -126,7 +128,7 @@ export default function SummaryTable({
         });
       }
     },
-    [token, setAuthenticated]
+    [token, setAuthenticated, refresh]
   );
 
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function SummaryTable({
         let fnhFob = 0;
         let mcmlFob = 0;
         if (fobData && fobData[moment(day).format("MMM Do, YYYY")]) {
-          ({ fnhFob, mcmlFob } = JSON.parse(
+          ({ fnhFob = 0, mcmlFob = 0 } = JSON.parse(
             fobData[moment(day).format("MMM Do, YYYY")]
           ));
         }
@@ -237,6 +239,13 @@ export default function SummaryTable({
                 },
               }}
               columns={columns()}
+              actions={[
+                {
+                  icon: () => <UploadDialog setRefresh={setRefresh}/>,
+                  tooltip: 'Upload an Excel fob data report',
+                  isFreeAction: true,
+                }
+              ]}
               data={data}
               options={{
                 exportButton: true,

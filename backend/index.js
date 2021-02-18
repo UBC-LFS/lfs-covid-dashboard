@@ -10,6 +10,9 @@ const expressJwt = require("express-jwt");
 const mongoose = require("mongoose");
 const axios = require("axios");
 const _ = require("lodash");
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
+const { spawn } = require('child_process');
 const { CheckInRecord, CheckOutRecord, FobRecord } = require("./record.model");
 
 const {
@@ -19,6 +22,7 @@ const {
   buildCheckInByBuilding,
 } = require("./utils");
 const moment = require("moment-timezone");
+const { group } = require("console");
 moment.tz.setDefault("America/Los_Angeles");
 
 const PORT = process.env.PORT || 8080;
@@ -473,6 +477,92 @@ const updateFobData = async ({ week, newData }) => {
   }
 };
 
+const findAndUpdateFobData = async ({ week, newData }) => {
+  // data: new Map(JSON.parse(newData)),
+  let doc;
+  try {
+    doc = await FobRecord.findOne({ week })
+    if(doc){
+      let map = Object.fromEntries(doc.data)
+      for(const day of newData){
+        if(map[day[0]]){
+          const json = JSON.parse(map[day[0]]);
+          map[day[0]] = JSON.stringify({
+            ...json,
+            ...JSON.parse(day[1])
+          });
+        } else {
+          map[day[0]] = day[1];
+        }
+      }
+      doc.data = new Map(Object.entries(map));
+    }else{
+      doc = new FobRecord({ week, data: new Map(newData)})
+    }
+    await doc.save();
+    
+    return {
+      status: 200,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      status: 500,
+      error: err,
+    };
+  }
+};
+
+const saveFobData = ({ file, res }) => {
+  const python = spawn('python', ['fobdata.py', '--filepath', file.path, '--building', file.originalname]);
+  // collect data from script
+  var dataToSend;
+  python.stdout.on('data', (data) => {
+    console.log('Pipe data from python script ...');
+    dataToSend = data.toString();
+  });
+  python.stderr.on('data', (data) => {
+    console.log("ERR ", data.toString())
+  });
+  // in close event we are sure that stream from child process is closed
+  python.on('close', async (code) => {
+    console.log(`child process close all stdio with code ${code}`);
+    let json = {};
+    try {
+      json = JSON.parse(dataToSend)
+    } catch (e) {
+      console.log(e)
+    }
+    let newJson = {};
+    const keyName = file.originalname + "Fob";
+    for (const [key, value] of Object.entries(json)) {
+      const week = moment(key, "MMM Do, YYYY").startOf("week").format("YYYY-MM-DD")
+      if(newJson[week]){
+        newJson[week].push([key, JSON.stringify({ [keyName]: value })]);
+      }else{
+        newJson[week] = [
+          [key, JSON.stringify({ [keyName]: value })]
+        ];
+      }
+    }
+    let groupUpdateResult = {
+      status: 200,
+    };
+    for (const [key, value] of Object.entries(newJson)) {
+      const result = await findAndUpdateFobData({ week: key, newData: value});
+      if(result.status === 500){
+        groupUpdateResult = result;
+      }
+    }
+    fs.unlink(file.path, (err) => {
+      if (err) {
+        console.error(err)
+      }
+    })
+    res.status(groupUpdateResult.status).send(groupUpdateResult)
+  });
+};
+
 generateOutputJSON(updateRecords, { time: "2021-01-10" });
 
 setInterval(function () {
@@ -549,6 +639,22 @@ app.post(
     getFobData(req.body.week).then((result) =>
       res.status(result.status).send(result)
     );
+  }
+);
+
+app.post(
+  "/api/fob/upload",
+  [
+    expressJwt({
+      secret: publicKey,
+      issuer: "UBC LFS",
+      algorithms: ["RS256"],
+    }),
+    upload.single('fobdata')
+  ],
+  (req, res) => {
+    const { file } = req;
+    saveFobData({ file, res })
   }
 );
 
