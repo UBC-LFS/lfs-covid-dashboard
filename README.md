@@ -40,6 +40,8 @@ Note: This [doesn't work with Windows](https://github.com/docker-library/faq/pul
         10.	Run `db.createUser({ user: {RECORDS_USERNAME}, pwd:  {RECORDS_PWD}, roles: [{ role: "readWrite", db: "records" }] })` to create a separate user to read and write to the records db
 5. Install the Nodejs process manager, PM2, by running ` sudo npm install pm2 -g`, this is needed to [manage/run project in background](https://pm2.keymetrics.io/docs/usage/quick-start/)
 6. Clone this repo and follow instructions to setup `.env` files in the `frontend` and `backend` folder
-7. Go into the `frontend` folder in repo and create a production build of the front-end by running `npm run prod`
-8. Go into the `backend` folder and run `pm2 --name CovidDashboard start npm – start` to start the project in the background
-9. Tada! The app can now be accessed in the specified port in `.env`
+7. Install Python 2 and Pip if they are not yet installed in the container
+8. Install the pandas and xlrd library by running `pip install pandas` and `pip install xlrd`. The two python libraries are required when executing the python script for parsing FNH and MCML fob data report.
+9. Go into the `frontend` folder in repo and create a production build of the front-end by running `npm run prod`
+10. Go into the `backend` folder and run `pm2 --name Covid-dashboard start npm – start` to start the project in the background
+11. Tada! The app can now be accessed in the specified port in `.env`
