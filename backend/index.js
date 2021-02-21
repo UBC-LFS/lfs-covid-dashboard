@@ -520,6 +520,7 @@ const saveFobData = ({ file, res }) => {
   python.stdout.on('data', (data) => {
     console.log('Pipe data from python script ...');
     dataToSend = data.toString();
+    console.log("Report summary: ", dataToSend);
   });
   python.stderr.on('data', (data) => {
     console.log("ERR ", data.toString())

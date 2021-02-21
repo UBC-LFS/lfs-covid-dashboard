@@ -30,7 +30,7 @@ fnhDoorKeywords = ['door 130', 'door 138', 'door 160', 'door 190','door 250', 'd
 # Return whether we should remove row for FNH data
 def shoudRemoveRowFNH(value):
   keywords = keywordRowsToRemove + fnhDoorKeywords
-  if(type(value) != str):
+  if(not isinstance(value, unicode)):
     return False
   else:
     value = value.lower()
@@ -75,3 +75,4 @@ jsonObj = json.dumps(tuples)
 print(jsonObj)
 
 sys.stdout.flush()
+
