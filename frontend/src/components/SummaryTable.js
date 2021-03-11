@@ -112,20 +112,23 @@ export default function SummaryTable({
         }
       } catch (err) {
         console.log(err);
-        toast.error("Fob data query failed because your session has expired. Please log in to try again.", {
-          position: "bottom-center",
-          autoClose: 7000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          toastId: "fobdata-query-failed",
-          onClose: () => {
-            Cookies.remove("access_token");
-            setAuthenticated(false);
+        toast.error(
+          "Fob data query failed because your session has expired. Please log in to try again.",
+          {
+            position: "bottom-center",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+            toastId: "fobdata-query-failed",
+            onClose: () => {
+              Cookies.remove("access_token");
+              setAuthenticated(false);
+            },
           }
-        });
+        );
       }
     },
     [token, setAuthenticated, refresh]
@@ -140,7 +143,8 @@ export default function SummaryTable({
           .format("YYYY-MM-DD");
         let wow =
           checkInLastWeek && checkInLastWeek[dayLastWeek]
-            ? (checkInThisWeek[day].count - checkInLastWeek[dayLastWeek].count) /
+            ? (checkInThisWeek[day].count -
+                checkInLastWeek[dayLastWeek].count) /
               checkInLastWeek[dayLastWeek].count
             : 0;
         wow = Math.round(wow * 100) + "%";
@@ -209,20 +213,23 @@ export default function SummaryTable({
       })
       .catch((err) => {
         console.log(err);
-        toast.error("Fob data update failed because your session has expired. Please log in to try again.", {
-          position: "bottom-center",
-          autoClose: 7000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          toastId: "fobdata-update-failed",
-          onClose: () => {
-            Cookies.remove("access_token");
-            setAuthenticated(false);
+        toast.error(
+          "Fob data update failed because your session has expired. Please log in to try again.",
+          {
+            position: "bottom-center",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+            toastId: "fobdata-update-failed",
+            onClose: () => {
+              Cookies.remove("access_token");
+              setAuthenticated(false);
+            },
           }
-        });
+        );
       });
   };
 
@@ -241,10 +248,10 @@ export default function SummaryTable({
               columns={columns()}
               actions={[
                 {
-                  icon: () => <UploadDialog setRefresh={setRefresh}/>,
-                  tooltip: 'Upload an Excel fob data report',
+                  icon: () => <UploadDialog setRefresh={setRefresh} />,
+                  tooltip: "Upload an Excel fob data report",
                   isFreeAction: true,
-                }
+                },
               ]}
               data={data}
               options={{

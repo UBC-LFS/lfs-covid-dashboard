@@ -8,8 +8,10 @@ export default function BuildingOccupancyChart({
   const labels = Object.keys(checkInByArea).length
     ? Object.keys(checkInByArea).sort()
     : Object.keys(buildingMaxOccupy).sort();
-  const areaCheckIn = labels.map(label => checkInByArea[label] ? checkInByArea[label] : 0);
-  const maxOccupancy = labels.map(label => buildingMaxOccupy[label]);
+  const areaCheckIn = labels.map((label) =>
+    checkInByArea[label] ? checkInByArea[label] : 0
+  );
+  const maxOccupancy = labels.map((label) => buildingMaxOccupy[label]);
   const data = {
     labels,
     datasets: [

@@ -21,7 +21,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {"Copyright © "}
-      <Link color="inherit" href="https://material-ui.com/">
+      <Link color="inherit" href="https://www.landfood.ubc.ca/">
         UBC Faculty of Land and Food Systems
       </Link>{" "}
       {new Date().getFullYear()}
@@ -116,7 +116,7 @@ export default function Login() {
     setCwlId("");
     setPassword("");
     setAuthenticated(false);
-    Cookies.remove("access_token")
+    Cookies.remove("access_token");
     toast.error("Login failed. Please try again with valid credentials", {
       position: "bottom-center",
       autoClose: false,

@@ -30,6 +30,7 @@ fnhDoorKeywords = ['door 130', 'door 138', 'door 160', 'door 190','door 250', 'd
 # Return whether we should remove row for FNH data
 def shoudRemoveRowFNH(value):
   keywords = keywordRowsToRemove + fnhDoorKeywords
+  # use isinstance(value, str) instead for python3
   if(not isinstance(value, unicode)):
     return False
   else:

@@ -9,7 +9,10 @@ import moment from "moment-timezone";
 export default function PrivateRoute({ component: Component, data, ...rest }) {
   const { authenticated, setAuthenticated } = useAppState();
   const token = Cookies.get("access_token");
-  if(!token || moment.unix(jwt_decode(token).exp).isBefore(moment(), 'second')){
+  if (
+    !token ||
+    moment.unix(jwt_decode(token).exp).isBefore(moment(), "second")
+  ) {
     setAuthenticated(false);
     Cookies.remove("access_token");
     toast.warn("Session expired. Please log in again.", {
@@ -20,7 +23,7 @@ export default function PrivateRoute({ component: Component, data, ...rest }) {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-      toastId: "session-expired"
+      toastId: "session-expired",
     });
   }
 

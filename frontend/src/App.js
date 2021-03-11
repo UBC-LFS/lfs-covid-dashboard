@@ -15,7 +15,7 @@ import Cookies from "js-cookie";
 import { useIdleTimer } from "react-idle-timer";
 import jwt_decode from "jwt-decode";
 import moment from "moment-timezone";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 import Home from "./pages/Home";
 import Stats from "./pages/Stats";
@@ -57,7 +57,10 @@ export default function App() {
   const token = Cookies.get("access_token");
 
   const checkTokenExpiry = () => {
-    if(!token || moment.unix(jwt_decode(token).exp).isBefore(moment(), 'second')){
+    if (
+      !token ||
+      moment.unix(jwt_decode(token).exp).isBefore(moment(), "second")
+    ) {
       setAuthenticated(false);
       Cookies.remove("access_token");
       toast.warn("Session expired. Please log in again.", {
@@ -68,20 +71,23 @@ export default function App() {
         pauseOnHover: true,
         draggable: true,
         progress: undefined,
-        toastId: "session-expired"
+        toastId: "session-expired",
       });
     }
-  }
+  };
 
   useIdleTimer({
     timeout: 1000 * 60 * 15,
     onIdle: checkTokenExpiry,
     onActive: checkTokenExpiry,
-    debounce: 1000
-  })
+    debounce: 1000,
+  });
 
   useEffect(() => {
-    if (token && moment.unix(jwt_decode(token).exp).isAfter(moment(), 'second')) {
+    if (
+      token &&
+      moment.unix(jwt_decode(token).exp).isAfter(moment(), "second")
+    ) {
       Axios.get("/api/covid", {
         withCredentials: true,
         headers: { Authorization: token },
@@ -100,12 +106,12 @@ export default function App() {
         .catch((err) => {
           setAuthenticated(false);
           setIsLoading(false);
-          Cookies.remove("access_token")
+          Cookies.remove("access_token");
         });
     } else {
       setAuthenticated(false);
       setIsLoading(false);
-      Cookies.remove("access_token")
+      Cookies.remove("access_token");
     }
   }, [token, setAuthenticated]);
 

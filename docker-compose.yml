@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   # Create frontend container
   frontend: # Name of our service
@@ -12,7 +12,7 @@ services:
       - backend
   # Create backend container
   backend:
-    # Create backend container  
+    # Create backend container
     build: ./backend
     ports:
       - "8080:8080"
@@ -24,7 +24,7 @@ services:
     image: mongo:latest
     container_name: mongodb
     restart: unless-stopped
-    environment: 
+    environment:
       MONGO_INITDB_DATABASE: records
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}

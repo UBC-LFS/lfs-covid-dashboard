@@ -196,12 +196,13 @@ export default function Summary({ summary }) {
               />
             </Box>
           </Grid>
-          {checkInThisWeek || checkInLastWeek ?
+          {(checkInThisWeek || checkInLastWeek) && (
             <SummaryTable
               date={moment(selectedDate).startOf("week").format("YYYY-MM-DD")}
               checkInThisWeek={checkInThisWeek}
               checkInLastWeek={checkInLastWeek}
-            /> : null}
+            />
+          )}
         </Grid>
       </main>
     </div>
