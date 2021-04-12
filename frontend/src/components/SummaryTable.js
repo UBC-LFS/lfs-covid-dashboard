@@ -23,6 +23,7 @@ import Cookies from "js-cookie";
 import FobDataChart from "./FobDataChart";
 import { useAppState } from "../appState";
 import UploadDialog from "./UploadDialog";
+import config from "../config"
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -87,7 +88,7 @@ export default function SummaryTable({
     async (date) => {
       try {
         const res = await Axios.post(
-          "/api/fob/query",
+          config.api.FOB_DATA_QUERY,
           {
             week: date,
           },
@@ -176,7 +177,7 @@ export default function SummaryTable({
 
   const updateFobData = ({ week, newData }) => {
     Axios.post(
-      "/api/fob/update",
+      config.api.FOB_DATA_UPDATE,
       {
         week,
         newData,

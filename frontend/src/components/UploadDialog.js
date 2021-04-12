@@ -19,6 +19,7 @@ import { useAppState } from "../appState";
 import Backdrop from "@material-ui/core/Backdrop";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { makeStyles } from "@material-ui/core/styles";
+import config from "../config";
 
 const getColor = (props) => {
   if (props.isDragAccept) {
@@ -96,7 +97,7 @@ export default function UploadDialog({ setRefresh }) {
     // Request made to the backend api
     // Send formData object
     setBackDrop(true);
-    Axios.post("/api/fob/upload", formData, {
+    Axios.post(config.api.FOB_DATA_UPDATE, formData, {
       withCredentials: true,
       headers: { Authorization: token },
     })

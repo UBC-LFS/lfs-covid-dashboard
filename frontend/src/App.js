@@ -23,6 +23,7 @@ import Summary from "./pages/Summary";
 import Login from "./pages/Login";
 import { useAppState } from "./appState";
 import PrivateRoute from "./components/PrivateRoute";
+import config from "./config";
 
 Chart.defaults.global.plugins.datalabels.display = false;
 
@@ -88,7 +89,7 @@ export default function App() {
       token &&
       moment.unix(jwt_decode(token).exp).isAfter(moment(), "second")
     ) {
-      Axios.get("/api/covid", {
+      Axios.get(config.api.COVID, {
         withCredentials: true,
         headers: { Authorization: token },
       })

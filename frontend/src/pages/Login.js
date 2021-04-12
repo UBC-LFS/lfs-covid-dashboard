@@ -16,6 +16,7 @@ import { useHistory } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import { useAppState } from "../appState";
 import "react-toastify/dist/ReactToastify.css";
+import config from "../config";
 
 function Copyright() {
   return (
@@ -79,7 +80,7 @@ export default function Login() {
   const handleSubmit = (event) => {
     event.preventDefault();
     Axios.post(
-      "/api/login",
+      config.api.LOGIN,
       {
         cwlId,
         password,

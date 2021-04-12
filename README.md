@@ -8,8 +8,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 ### Run Locally
 
 1. Start a local instance of mongodb on port `27017`
-2. `cd` into `backend` folder, run `npm start`
-3. `cd` into `frontend` folder, run `npm start`
+2. `cd` into `backend` folder, run `npm run dev`
+3. `cd` into `frontend` folder, run `npm run dev`
 
 ### Run with Docker
 

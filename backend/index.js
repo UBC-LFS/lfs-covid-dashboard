@@ -329,17 +329,21 @@ const updateRecords = ({
   time = moment(),
   period = 'day',
 }) => {
+  // perform checkin survey data database update if there are new reponses
   if (checkInResponses.length > numCheckInRecords) {
     numCheckInRecords = checkInResponses.length;
     checkInResponses.forEach(async (response) => {
+      // only account for survey responses that are completed
       if (response && response.values && response.values.finished) {
         const {
           recordedDate: rawRecordedDate,
           _recordId: _id,
         } = response.values;
         const recordedDate = moment(rawRecordedDate);
-
+        
+        // only account for new survey responses that has not been recorded in database
         if (recordedDate.isSameOrAfter(time, period)) {
+          // extract key information from new survey repsonses
           const {
             QID10: buildings,
             QID13: fnhLevels,
@@ -361,7 +365,7 @@ const updateRecords = ({
               otherAreas
             );
           }
-
+          // save new checkin survey response data into the database
           try {
             await CheckInRecord.findOneAndUpdate(
               { _id },
@@ -386,17 +390,21 @@ const updateRecords = ({
     });
   }
 
+  // perform checkout survey data database update if there are new reponses
   if (checkOutResponses.length > numCheckOutRecords) {
     numCheckOutRecords = checkOutResponses.length;
     checkOutResponses.forEach(async (response) => {
+      // only account for survey responses that are completed
       if (response && response.values && response.values.finished) {
         const {
           recordedDate: rawRecordedDate,
           _recordId: _id,
         } = response.values;
         const recordedDate = moment(rawRecordedDate);
-
+        
+        // only account for new survey responses that has not been recorded in database
         if (recordedDate.isSameOrAfter(time, period)) {
+          // extract key information from new survey repsonses
           const {
             QID14: buildings,
             QID16: fnhAreas,
@@ -418,7 +426,8 @@ const updateRecords = ({
               otherBuildings
             );
           }
-
+          
+          // save new checkout survey response data into the database
           try {
             await CheckOutRecord.findOneAndUpdate(
               { _id },
@@ -445,6 +454,7 @@ const updateRecords = ({
   console.log(`records updated ${moment().format('YYYY-MM-DDTHH:mm')}`);
 };
 
+// get fob data for a specific week
 const getFobData = async (week) => {
   try {
     const fobData = await FobRecord.findOne({ week });
@@ -460,6 +470,8 @@ const getFobData = async (week) => {
   }
 };
 
+// update fob data for a specific week in databse
+// method used by manual fob data entry
 const updateFobData = async ({ week, newData }) => {
   try {
     await FobRecord.findOneAndUpdate(
@@ -485,8 +497,9 @@ const updateFobData = async ({ week, newData }) => {
   }
 };
 
+// update fob data for a specific week in database
+// method used by fob data excel upload
 const findAndUpdateFobData = async ({ week, newData }) => {
-  // data: new Map(JSON.parse(newData)),
   let doc;
   try {
     doc = await FobRecord.findOne({ week });
@@ -522,7 +535,9 @@ const findAndUpdateFobData = async ({ week, newData }) => {
   }
 };
 
+// save fob data from excel to database
 const saveFobData = ({ file, res }) => {
+  // create python process for running fob data extraction script
   const python = spawn('python', [
     'fobdata.py',
     '--filepath',
@@ -530,7 +545,7 @@ const saveFobData = ({ file, res }) => {
     '--building',
     file.originalname,
   ]);
-  // collect data from script
+  // collect fob data from script
   let dataToSend;
   python.stdout.on('data', (data) => {
     console.log('Pipe data from python script ...');
@@ -540,7 +555,7 @@ const saveFobData = ({ file, res }) => {
   python.stderr.on('data', (data) => {
     console.log('ERR ', data.toString());
   });
-  // in close event we are sure that stream from child process is closed
+  // save fob data from excel to database after all data has been extracted
   python.on('close', async (code) => {
     console.log(`child process close all stdio with code ${code}`);
     let json = {};
@@ -617,6 +632,7 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'build')));
 
 // routes
+// route for computing covid stats
 app.get(
   '/api/covid',
   expressJwt({
@@ -634,6 +650,7 @@ app.get(
   }
 );
 
+// route for updating fob data
 app.post(
   '/api/fob/update',
   expressJwt({
@@ -646,6 +663,7 @@ app.post(
   }
 );
 
+// route for querying fob data
 app.post(
   '/api/fob/query',
   expressJwt({
@@ -658,6 +676,7 @@ app.post(
   }
 );
 
+// route for uploading fob data
 app.post(
   '/api/fob/upload',
   [
@@ -674,10 +693,12 @@ app.post(
   }
 );
 
+// route for login
 app.post('/api/login', (req, response) => {
   const client = ldap.createClient({
     url: process.env.UBC_LDAP_SERVER,
   });
+  // first ldap bind for authencating CWL login
   client.bind(
     `uid=${req.body.cwlId},ou=People,dc=landfood,dc=ubc,dc=ca`,
     req.body.password,
@@ -686,6 +707,7 @@ app.post('/api/login', (req, response) => {
         client.unbind();
         return response.status(401).send('Not Authenticated');
       }
+      // second ldaq bind for authencating covid dashboard group login
       client.bind(
         'cn=covid-dashboard-svc-host,ou=Service Accounts,dc=landfood,dc=ubc,dc=ca',
         process.env.UBC_LDAP_SERVICE_ACCOUNT_PWD,
@@ -694,6 +716,7 @@ app.post('/api/login', (req, response) => {
             client.unbind();
             return response.status(401).send('Not Authenticated');
           }
+          // search for CWL id within covid dashboard group
           client.search(
             'cn=covid-dashboard,ou=Roles,ou=Groups,dc=landfood,dc=ubc,dc=ca',
             {
@@ -706,6 +729,7 @@ app.post('/api/login', (req, response) => {
               }
               res.on('searchEntry', (entry) => {
                 const { member } = entry.object;
+                // upon successful search for cwl id in group, sign and return jwt token valid for 1 hour
                 if (member.some((m) => m.includes(`uid=${req.body.cwlId}`))) {
                   const expiration = moment().add(1, 'h');
                   const exp = expiration.unix();
